@@ -30,7 +30,7 @@ The connector listening on a subject receives messages published on that subject
 
 ### Position handling
 
-he position is a random binary marshaled UUIDv4.
+The position is a random binary marshaled UUIDv4.
 
 ### Configuration
 
