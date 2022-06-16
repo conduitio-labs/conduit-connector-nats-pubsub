@@ -28,7 +28,6 @@ import (
 type Iterator interface {
 	HasNext(ctx context.Context) bool
 	Next(ctx context.Context) (sdk.Record, error)
-	Ack(ctx context.Context, position sdk.Position) error
 	Stop() error
 }
 
@@ -94,11 +93,6 @@ func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
 	}
 
 	return record, nil
-}
-
-// Ack acknowledges a message at the given position.
-func (s *Source) Ack(ctx context.Context, position sdk.Position) error {
-	return s.iterator.Ack(ctx, position)
 }
 
 // Teardown closes connections, stops iterator.
