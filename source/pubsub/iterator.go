@@ -71,12 +71,6 @@ func (i *Iterator) Next(ctx context.Context) (sdk.Record, error) {
 	}
 }
 
-// Ack returns sdk.ErrUnimplemented,
-// we don't need anything here for Pub/Sub iterator.
-func (i *Iterator) Ack(ctx context.Context, position sdk.Position) error {
-	return sdk.ErrUnimplemented
-}
-
 // Stop stops the Iterator, unsubscribes from a subject.
 func (i *Iterator) Stop() (err error) {
 	if i.subscription != nil {

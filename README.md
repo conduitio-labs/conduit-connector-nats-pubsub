@@ -18,7 +18,7 @@ Run `make`.
 
 Run `make test` to run all the unit and integration tests, which require Docker and Docker Compose to be installed and running. The command will handle starting and stopping docker containers for you.
 
-## NATS PubSub Source
+## Source
 
 ### Connection and authentication
 
