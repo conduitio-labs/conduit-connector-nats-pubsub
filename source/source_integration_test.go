@@ -32,9 +32,9 @@ func TestSource_Open(t *testing.T) {
 
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.ConfigKeyURLs:           test.TestURL,
-		config.ConfigKeySubject:        "foo",
-		config.ConfigKeyConnectionName: "super_connection",
+		config.KeyURLs:           test.TestURL,
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -213,8 +213,8 @@ func TestSource_Read_PubSub(t *testing.T) {
 func createTestPubSub(t *testing.T, subject string) (sdk.Source, error) {
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.ConfigKeyURLs:    test.TestURL,
-		config.ConfigKeySubject: subject,
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: subject,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("configure source: %w", err)
