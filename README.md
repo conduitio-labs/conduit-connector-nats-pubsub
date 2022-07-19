@@ -30,7 +30,7 @@ The connector listening on a subject receives messages published on that subject
 
 ### Position handling
 
-The position is a random binary marshaled UUIDv4.
+The position is a random binary marshaled UUIDv4. This is because the NATS PubSub model doesn't persist messages and it's not possible to read messages from a specific position.
 
 ### Configuration
 
