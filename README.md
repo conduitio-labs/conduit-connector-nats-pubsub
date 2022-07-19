@@ -26,7 +26,9 @@ The NATS PubSub connector connects to a NATS server or a cluster with the requir
 
 ### Receiving messages
 
-The connector listening on a subject receives messages published on that subject. If the connector is not actively listening on the subject, the message is not received. The connector can use the [wildcard](https://docs.nats.io/nats-concepts/subjects#wildcards) tokens such as `*` and `>` to match a single token or to match the tail of a subject.
+The connector listening on a subject receives messages published on that subject. If the connector is stopped and restarted after a while, it will not get the messages which were published meanwhile.
+
+The connector can use the [wildcard](https://docs.nats.io/nats-concepts/subjects#wildcards) tokens such as `*` and `>` to match a single token or to match the tail of a subject.
 
 ### Position handling
 
