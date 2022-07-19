@@ -28,22 +28,22 @@ const (
 )
 
 const (
-	// ConfigKeyURLs is a config name for a connection URLs.
-	ConfigKeyURLs = "urls"
-	// ConfigKeySubject is a config name for a subject.
-	ConfigKeySubject = "subject"
-	// ConfigKeyConnectionName is a config name for a connection name.
-	ConfigKeyConnectionName = "connectionName"
-	// ConfigKeyNKeyPath is a config name for a path pointed to a NKey pair.
-	ConfigKeyNKeyPath = "nkeyPath"
-	// ConfigKeyCredentialsFilePath is config name for a path pointed to a credentials file.
-	ConfigKeyCredentialsFilePath = "credentialsFilePath"
-	// ConfigKeyTLSClientCertPath is a config name for a path pointed to a TLS client certificate.
-	ConfigKeyTLSClientCertPath = "tlsClientCertPath"
-	// ConfigKeyTLSClientPrivateKeyPath is a config name for a path pointed to a TLS client private key.
-	ConfigKeyTLSClientPrivateKeyPath = "tlsClientPrivateKeyPath"
-	// ConfigKeyTLSRootCACertPath is a config name for a path pointed to a TLS root certificate.
-	ConfigKeyTLSRootCACertPath = "tlsRootCACertPath"
+	// KeyURLs is a config name for a connection URLs.
+	KeyURLs = "urls"
+	// KeySubject is a config name for a subject.
+	KeySubject = "subject"
+	// KeyConnectionName is a config name for a connection name.
+	KeyConnectionName = "connectionName"
+	// KeyNKeyPath is a config name for a path pointed to a NKey pair.
+	KeyNKeyPath = "nkeyPath"
+	// KeyCredentialsFilePath is config name for a path pointed to a credentials file.
+	KeyCredentialsFilePath = "credentialsFilePath"
+	// KeyTLSClientCertPath is a config name for a path pointed to a TLS client certificate.
+	KeyTLSClientCertPath = "tls.clientCertPath"
+	// KeyTLSClientPrivateKeyPath is a config name for a path pointed to a TLS client private key.
+	KeyTLSClientPrivateKeyPath = "tls.clientPrivateKeyPath"
+	// KeyTLSRootCACertPath is a config name for a path pointed to a TLS root certificate.
+	KeyTLSRootCACertPath = "tls.rootCACertPath"
 )
 
 // Config contains configurable values
@@ -60,23 +60,23 @@ type Config struct {
 	CredentialsFilePath string `key:"credentialsFilePath" validate:"omitempty,file"`
 	// Optional parameters for a TLS encrypted connection.
 	// For more details see https://docs.nats.io/using-nats/developer/connecting/tls.
-	TLSClientCertPath string `key:"tlsClientCertPath" validate:"required_with=TLSClientPrivateKeyPath,omitempty,file"`
+	TLSClientCertPath string `key:"tls.clientCertPath" validate:"required_with=TLSClientPrivateKeyPath,omitempty,file"`
 	//nolint:lll // "validate" tag can be pretty verbose
-	TLSClientPrivateKeyPath string `key:"tlsClientPrivateKeyPath" validate:"required_with=TLSClientCertPath,omitempty,file"`
-	TLSRootCACertPath       string `key:"tlsRootCACertPath" validate:"omitempty,file"`
+	TLSClientPrivateKeyPath string `key:"tls.clientPrivateKeyPath" validate:"required_with=TLSClientCertPath,omitempty,file"`
+	TLSRootCACertPath       string `key:"tls.rootCACertPath" validate:"omitempty,file"`
 }
 
 // Parse maps the incoming map to the Config and validates it.
 func Parse(cfg map[string]string) (Config, error) {
 	config := Config{
-		URLs:                    strings.Split(cfg[ConfigKeyURLs], ","),
-		Subject:                 cfg[ConfigKeySubject],
-		ConnectionName:          cfg[ConfigKeyConnectionName],
-		NKeyPath:                cfg[ConfigKeyNKeyPath],
-		CredentialsFilePath:     cfg[ConfigKeyCredentialsFilePath],
-		TLSClientCertPath:       cfg[ConfigKeyTLSClientCertPath],
-		TLSClientPrivateKeyPath: cfg[ConfigKeyTLSClientPrivateKeyPath],
-		TLSRootCACertPath:       cfg[ConfigKeyTLSRootCACertPath],
+		URLs:                    strings.Split(cfg[KeyURLs], ","),
+		Subject:                 cfg[KeySubject],
+		ConnectionName:          cfg[KeyConnectionName],
+		NKeyPath:                cfg[KeyNKeyPath],
+		CredentialsFilePath:     cfg[KeyCredentialsFilePath],
+		TLSClientCertPath:       cfg[KeyTLSClientCertPath],
+		TLSClientPrivateKeyPath: cfg[KeyTLSClientPrivateKeyPath],
+		TLSRootCACertPath:       cfg[KeyTLSRootCACertPath],
 	}
 
 	config.setDefaults()

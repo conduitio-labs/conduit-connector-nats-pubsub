@@ -35,8 +35,8 @@ func TestDestination_Open(t *testing.T) {
 		destination := NewDestination()
 
 		err := destination.Configure(context.Background(), map[string]string{
-			config.ConfigKeyURLs:    test.TestURL,
-			config.ConfigKeySubject: "foo_destination",
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: "foo_destination",
 		})
 		is.NoErr(err)
 
@@ -55,8 +55,8 @@ func TestDestination_Open(t *testing.T) {
 		destination := NewDestination()
 
 		err := destination.Configure(context.Background(), map[string]string{
-			config.ConfigKeyURLs:    "nats://localhost:6666",
-			config.ConfigKeySubject: "foo_destination",
+			config.KeyURLs:    "nats://localhost:6666",
+			config.KeySubject: "foo_destination",
 		})
 		is.NoErr(err)
 
@@ -79,8 +79,8 @@ func TestDestination_Write(t *testing.T) {
 		destination := NewDestination()
 
 		err := destination.Configure(context.Background(), map[string]string{
-			config.ConfigKeyURLs:    test.TestURL,
-			config.ConfigKeySubject: "foo_destination_write_pubsub",
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: "foo_destination_write_pubsub",
 		})
 		is.NoErr(err)
 
@@ -108,8 +108,8 @@ func TestDestination_WriteAsync(t *testing.T) {
 		destination := NewDestination()
 
 		err := destination.Configure(context.Background(), map[string]string{
-			config.ConfigKeyURLs:    test.TestURL,
-			config.ConfigKeySubject: "foo_destination_write_async_pubsub",
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: "foo_destination_write_async_pubsub",
 		})
 		is.NoErr(err)
 

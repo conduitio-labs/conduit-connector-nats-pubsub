@@ -39,8 +39,8 @@ func TestParse(t *testing.T) {
 			name: "success, default values",
 			args: args{
 				cfg: map[string]string{
-					config.ConfigKeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.ConfigKeySubject: "foo",
+					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					config.KeySubject: "foo",
 				},
 			},
 			want: Config{
@@ -56,9 +56,9 @@ func TestParse(t *testing.T) {
 			name: "success, set buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.ConfigKeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.ConfigKeySubject: "foo",
-					ConfigKeyBufferSize:     "128",
+					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					config.KeySubject:   "foo",
+					ConfigKeyBufferSize: "128",
 				},
 			},
 			want: Config{
@@ -74,8 +74,8 @@ func TestParse(t *testing.T) {
 			name: "success, default buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.ConfigKeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.ConfigKeySubject: "foo",
+					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					config.KeySubject: "foo",
 				},
 			},
 			want: Config{
@@ -91,9 +91,9 @@ func TestParse(t *testing.T) {
 			name: "fail, invalid buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.ConfigKeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.ConfigKeySubject: "foo",
-					ConfigKeyBufferSize:     "8",
+					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					config.KeySubject:   "foo",
+					ConfigKeyBufferSize: "8",
 				},
 			},
 			want:    Config{},
@@ -103,9 +103,9 @@ func TestParse(t *testing.T) {
 			name: "fail, invalid buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.ConfigKeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.ConfigKeySubject: "foo",
-					ConfigKeyBufferSize:     "what",
+					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					config.KeySubject:   "foo",
+					ConfigKeyBufferSize: "what",
 				},
 			},
 			want:    Config{},
