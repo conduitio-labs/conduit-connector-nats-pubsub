@@ -37,6 +37,7 @@ type Source struct {
 
 	config   Config
 	iterator Iterator
+	errC     chan error
 }
 
 // NewSource creates new instance of the Source.
@@ -52,6 +53,7 @@ func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
 	}
 
 	s.config = config
+	s.errC = make(chan error, 1)
 
 	return nil
 }
@@ -68,6 +70,12 @@ func (s *Source) Open(ctx context.Context, position sdk.Position) error {
 		return fmt.Errorf("connect to NATS: %w", err)
 	}
 
+	// register an error handler for async errors,
+	// the Source listens to them within the Read method and propagates the error if it occurs.
+	conn.SetErrorHandler(func(con *nats.Conn, sub *nats.Subscription, err error) {
+		s.errC <- err
+	})
+
 	s.iterator, err = pubsub.NewIterator(ctx, pubsub.IteratorParams{
 		Conn:       conn,
 		BufferSize: s.config.BufferSize,
@@ -82,17 +90,24 @@ func (s *Source) Open(ctx context.Context, position sdk.Position) error {
 
 // Read fetches a record from an iterator.
 // If there's no record will return sdk.ErrBackoffRetry.
+// If the Source's errC is not empty will return the underlying error.
 func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
-	if !s.iterator.HasNext(ctx) {
-		return sdk.Record{}, sdk.ErrBackoffRetry
-	}
+	select {
+	case err := <-s.errC:
+		return sdk.Record{}, fmt.Errorf("got an async error: %w", err)
 
-	record, err := s.iterator.Next(ctx)
-	if err != nil {
-		return sdk.Record{}, fmt.Errorf("read next record: %w", err)
-	}
+	default:
+		if !s.iterator.HasNext(ctx) {
+			return sdk.Record{}, sdk.ErrBackoffRetry
+		}
 
-	return record, nil
+		record, err := s.iterator.Next(ctx)
+		if err != nil {
+			return sdk.Record{}, fmt.Errorf("read next record: %w", err)
+		}
+
+		return record, nil
+	}
 }
 
 // Teardown closes connections, stops iterator.
