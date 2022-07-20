@@ -1,0 +1,9 @@
+# editors stuff
+.idea
+.vscode
+
+# binary
+conduit-connector-nats-pubsub
+
+# testing stuff
+*.rest
