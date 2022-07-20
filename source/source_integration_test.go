@@ -58,38 +58,99 @@ func TestSource_Open(t *testing.T) {
 	}
 }
 
-//nolint:gocyclo // this is a test function
-func TestSource_Read_PubSub(t *testing.T) {
+func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success, one message", func(t *testing.T) {
-		t.Parallel()
+	subject := "foo_one"
 
-		subject := "foo_one"
+	source, err := createTestPubSub(t, map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: subject,
+	})
+	if err != nil {
+		t.Fatalf("create test pubsub: %v", err)
 
-		source, err := createTestPubSub(t, map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: subject,
-		})
-		if err != nil {
-			t.Fatalf("create test pubsub: %v", err)
+		return
+	}
 
-			return
+	t.Cleanup(func() {
+		if err := source.Teardown(context.Background()); err != nil {
+			t.Fatalf("teardown source: %v", err)
 		}
+	})
 
-		t.Cleanup(func() {
-			if err := source.Teardown(context.Background()); err != nil {
-				t.Fatalf("teardown source: %v", err)
+	testConn, err := test.GetTestConnection()
+	if err != nil {
+		t.Fatalf("get test connection: %v", err)
+
+		return
+	}
+
+	err = testConn.Publish(subject, []byte(`{"level": "info"}`))
+	if err != nil {
+		t.Fatalf("publish message: %v", err)
+
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	var record sdk.Record
+	for {
+		record, err = source.Read(ctx)
+		if err != nil {
+			if errors.Is(err, sdk.ErrBackoffRetry) {
+				continue
 			}
-		})
-
-		testConn, err := test.GetTestConnection()
-		if err != nil {
-			t.Fatalf("get test connection: %v", err)
+			t.Fatalf("read message: %v", err)
 
 			return
 		}
 
+		break
+	}
+
+	if !reflect.DeepEqual(record.Payload.Bytes(), []byte(`{"level": "info"}`)) {
+		t.Fatalf("Source.Read = %v, want %v", record.Payload.Bytes(), []byte(`{"level": "info"}`))
+
+		return
+	}
+}
+
+func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
+	t.Parallel()
+
+	subject := "foo_many"
+
+	source, err := createTestPubSub(t, map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: subject,
+	})
+	if err != nil {
+		t.Fatalf("create test pubsub: %v", err)
+
+		return
+	}
+
+	t.Cleanup(func() {
+		if err := source.Teardown(context.Background()); err != nil {
+			t.Fatalf("teardown source: %v", err)
+		}
+	})
+
+	testConn, err := test.GetTestConnection()
+	if err != nil {
+		t.Fatalf("get test connection: %v", err)
+
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	records := make([]sdk.Record, 0)
+	for i := 0; i < 128; i++ {
 		err = testConn.Publish(subject, []byte(`{"level": "info"}`))
 		if err != nil {
 			t.Fatalf("publish message: %v", err)
@@ -97,185 +158,119 @@ func TestSource_Read_PubSub(t *testing.T) {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-
-		var record sdk.Record
-		for {
-			record, err = source.Read(ctx)
-			if err != nil {
-				if errors.Is(err, sdk.ErrBackoffRetry) {
-					continue
-				}
-				t.Fatalf("read message: %v", err)
-
-				return
-			}
-
-			break
-		}
-
-		if !reflect.DeepEqual(record.Payload.Bytes(), []byte(`{"level": "info"}`)) {
-			t.Fatalf("Source.Read = %v, want %v", record.Payload.Bytes(), []byte(`{"level": "info"}`))
-
-			return
-		}
-	})
-
-	t.Run("success, many messages", func(t *testing.T) {
-		t.Parallel()
-
-		subject := "foo_many"
-
-		source, err := createTestPubSub(t, map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: subject,
-		})
+		record, err := source.Read(ctx)
 		if err != nil {
-			t.Fatalf("create test pubsub: %v", err)
+			if errors.Is(err, sdk.ErrBackoffRetry) {
+				i--
 
-			return
-		}
-
-		t.Cleanup(func() {
-			if err := source.Teardown(context.Background()); err != nil {
-				t.Fatalf("teardown source: %v", err)
+				continue
 			}
-		})
-
-		testConn, err := test.GetTestConnection()
-		if err != nil {
-			t.Fatalf("get test connection: %v", err)
-
-			return
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-
-		records := make([]sdk.Record, 0)
-		for i := 0; i < 128; i++ {
-			err = testConn.Publish(subject, []byte(`{"level": "info"}`))
-			if err != nil {
-				t.Fatalf("publish message: %v", err)
-
-				return
-			}
-
-			record, err := source.Read(ctx)
-			if err != nil {
-				if errors.Is(err, sdk.ErrBackoffRetry) {
-					i--
-
-					continue
-				}
-				t.Fatalf("read message: %v", err)
-
-				return
-			}
-
-			records = append(records, record)
-		}
-
-		if len(records) != 128 {
-			t.Fatalf("len(records) = %d, expected = %d", len(records), 128)
-
-			return
-		}
-	})
-
-	t.Run("success, no messages, backof retry", func(t *testing.T) {
-		t.Parallel()
-
-		subject := "no_messages"
-
-		source, err := createTestPubSub(t, map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: subject,
-		})
-		if err != nil {
-			t.Fatalf("create test pubsub: %v", err)
-
-			return
-		}
-
-		t.Cleanup(func() {
-			if err := source.Teardown(context.Background()); err != nil {
-				t.Fatalf("teardown source: %v", err)
-			}
-		})
-
-		_, err = source.Read(context.Background())
-		if err == nil {
-			t.Fatal("Source.Read expected backoff retry error, got nil")
-
-			return
-		}
-
-		if err != nil && !errors.Is(err, sdk.ErrBackoffRetry) {
 			t.Fatalf("read message: %v", err)
 
 			return
 		}
+
+		records = append(records, record)
+	}
+
+	if len(records) != 128 {
+		t.Fatalf("len(records) = %d, expected = %d", len(records), 128)
+
+		return
+	}
+}
+
+func TestSource_ReadPubSubSuccessNoMessagesBackoff(t *testing.T) {
+	t.Parallel()
+
+	subject := "no_messages"
+
+	source, err := createTestPubSub(t, map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: subject,
+	})
+	if err != nil {
+		t.Fatalf("create test pubsub: %v", err)
+
+		return
+	}
+
+	t.Cleanup(func() {
+		if err := source.Teardown(context.Background()); err != nil {
+			t.Fatalf("teardown source: %v", err)
+		}
 	})
 
-	t.Run("fail, many messages, slow consumer error", func(t *testing.T) {
-		t.Parallel()
+	_, err = source.Read(context.Background())
+	if err == nil {
+		t.Fatal("Source.Read expected backoff retry error, got nil")
 
-		subject := "slow_consumers_subj"
+		return
+	}
 
-		source, err := createTestPubSub(t, map[string]string{
-			config.KeyURLs:      test.TestURL,
-			config.KeySubject:   subject,
-			ConfigKeyBufferSize: "64",
-		})
+	if err != nil && !errors.Is(err, sdk.ErrBackoffRetry) {
+		t.Fatalf("read message: %v", err)
+
+		return
+	}
+}
+
+func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
+	t.Parallel()
+
+	subject := "slow_consumers_subj"
+
+	source, err := createTestPubSub(t, map[string]string{
+		config.KeyURLs:      test.TestURL,
+		config.KeySubject:   subject,
+		ConfigKeyBufferSize: "64",
+	})
+	if err != nil {
+		t.Fatalf("create test pubsub: %v", err)
+
+		return
+	}
+
+	t.Cleanup(func() {
+		if err := source.Teardown(context.Background()); err != nil {
+			t.Fatalf("teardown source: %v", err)
+		}
+	})
+
+	testConn, err := test.GetTestConnection()
+	if err != nil {
+		t.Fatalf("get test connection: %v", err)
+
+		return
+	}
+
+	for i := 0; i < 1_000_000; i++ {
+		err = testConn.Publish(subject, []byte(`{"level": "info"}`))
 		if err != nil {
-			t.Fatalf("create test pubsub: %v", err)
+			t.Fatalf("publish test mesage: %v", err)
 
 			return
 		}
 
-		t.Cleanup(func() {
-			if err := source.Teardown(context.Background()); err != nil {
-				t.Fatalf("teardown source: %v", err)
-			}
-		})
-
-		testConn, err := test.GetTestConnection()
+		_, err := source.Read(context.Background())
 		if err != nil {
-			t.Fatalf("get test connection: %v", err)
+			if errors.Is(err, sdk.ErrBackoffRetry) {
+				continue
+			}
+
+			if !errors.Is(errors.Unwrap(err), nats.ErrSlowConsumer) {
+				t.Fatalf("Source.Read expected slow consumer error, got %v", err)
+
+				return
+			}
 
 			return
 		}
 
-		for i := 0; i < 1_000_000; i++ {
-			err = testConn.Publish(subject, []byte(`{"level": "info"}`))
-			if err != nil {
-				t.Fatalf("publish test mesage: %v", err)
+		continue
+	}
 
-				return
-			}
-
-			_, err := source.Read(context.Background())
-			if err != nil {
-				if errors.Is(err, sdk.ErrBackoffRetry) {
-					continue
-				}
-
-				if !errors.Is(errors.Unwrap(err), nats.ErrSlowConsumer) {
-					t.Fatalf("Source.Read expected slow consumer error, got %v", err)
-
-					return
-				}
-
-				return
-			}
-
-			continue
-		}
-
-		t.Fatalf("Source.Read didn't get the expected slow consumer error")
-	})
+	t.Fatalf("Source.Read didn't get the expected slow consumer error")
 }
 
 func createTestPubSub(t *testing.T, cfg map[string]string) (sdk.Source, error) {
