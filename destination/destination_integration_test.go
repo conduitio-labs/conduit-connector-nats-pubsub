@@ -24,106 +24,94 @@ import (
 	"github.com/matryer/is"
 )
 
-func TestDestination_Open(t *testing.T) {
+func TestDestination_OpenSuccess(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success, pubsub", func(t *testing.T) {
-		t.Parallel()
+	is := is.New(t)
 
-		is := is.New(t)
+	destination := NewDestination()
 
-		destination := NewDestination()
-
-		err := destination.Configure(context.Background(), map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: "foo_destination",
-		})
-		is.NoErr(err)
-
-		err = destination.Open(context.Background())
-		is.NoErr(err)
-
-		err = destination.Teardown(context.Background())
-		is.NoErr(err)
+	err := destination.Configure(context.Background(), map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: "foo_destination",
 	})
+	is.NoErr(err)
 
-	t.Run("fail, url is pointed to a non-existent server", func(t *testing.T) {
-		t.Parallel()
+	err = destination.Open(context.Background())
+	is.NoErr(err)
 
-		is := is.New(t)
-
-		destination := NewDestination()
-
-		err := destination.Configure(context.Background(), map[string]string{
-			config.KeyURLs:    "nats://localhost:6666",
-			config.KeySubject: "foo_destination",
-		})
-		is.NoErr(err)
-
-		err = destination.Open(context.Background())
-		is.True(err != nil)
-
-		err = destination.Teardown(context.Background())
-		is.NoErr(err)
-	})
+	err = destination.Teardown(context.Background())
+	is.NoErr(err)
 }
 
-func TestDestination_Write(t *testing.T) {
+func TestDestination_OpenFail(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success, pubsub sync write, 1 message", func(t *testing.T) {
-		t.Parallel()
+	is := is.New(t)
 
-		is := is.New(t)
+	destination := NewDestination()
 
-		destination := NewDestination()
+	err := destination.Configure(context.Background(), map[string]string{
+		config.KeyURLs:    "nats://localhost:6666",
+		config.KeySubject: "foo_destination",
+	})
+	is.NoErr(err)
 
-		err := destination.Configure(context.Background(), map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: "foo_destination_write_pubsub",
-		})
-		is.NoErr(err)
+	err = destination.Open(context.Background())
+	is.True(err != nil)
 
-		err = destination.Open(context.Background())
-		is.NoErr(err)
+	err = destination.Teardown(context.Background())
+	is.NoErr(err)
+}
 
+func TestDestination_WriteOneMessage(t *testing.T) {
+	t.Parallel()
+
+	is := is.New(t)
+
+	destination := NewDestination()
+
+	err := destination.Configure(context.Background(), map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: "foo_destination_write_pubsub",
+	})
+	is.NoErr(err)
+
+	err = destination.Open(context.Background())
+	is.NoErr(err)
+
+	err = destination.Write(context.Background(), sdk.Record{
+		Payload: sdk.RawData([]byte("hello")),
+	})
+	is.NoErr(err)
+
+	err = destination.Teardown(context.Background())
+	is.NoErr(err)
+}
+
+func TestDestination_WriteManMessages(t *testing.T) {
+	t.Parallel()
+
+	is := is.New(t)
+
+	destination := NewDestination()
+
+	err := destination.Configure(context.Background(), map[string]string{
+		config.KeyURLs:    test.TestURL,
+		config.KeySubject: "foo_destination_write_pubsub",
+	})
+	is.NoErr(err)
+
+	err = destination.Open(context.Background())
+	is.NoErr(err)
+
+	for i := 0; i < 1000; i++ {
 		err = destination.Write(context.Background(), sdk.Record{
 			Payload: sdk.RawData([]byte("hello")),
 		})
 		is.NoErr(err)
+	}
 
-		err = destination.Teardown(context.Background())
-		is.NoErr(err)
-	})
-}
-
-func TestDestination_WriteAsync(t *testing.T) {
-	t.Parallel()
-
-	t.Run("fail, try to pubsub async write, expected Unimplemented error", func(t *testing.T) {
-		t.Parallel()
-
-		is := is.New(t)
-
-		destination := NewDestination()
-
-		err := destination.Configure(context.Background(), map[string]string{
-			config.KeyURLs:    test.TestURL,
-			config.KeySubject: "foo_destination_write_async_pubsub",
-		})
-		is.NoErr(err)
-
-		err = destination.Open(context.Background())
-		is.NoErr(err)
-
-		err = destination.WriteAsync(context.Background(), sdk.Record{
-			Payload: sdk.RawData([]byte("hello")),
-		}, func(err error) error {
-			return err
-		})
-		is.Equal(err, sdk.ErrUnimplemented)
-
-		err = destination.Teardown(context.Background())
-		is.NoErr(err)
-	})
+	err = destination.Teardown(context.Background())
+	is.NoErr(err)
 }
