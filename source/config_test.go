@@ -45,8 +45,10 @@ func TestParse(t *testing.T) {
 			},
 			want: Config{
 				Config: config.Config{
-					URLs:    []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
-					Subject: "foo",
+					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
+					Subject:       "foo",
+					MaxReconnects: config.DefaultMaxReconnects,
+					ReconnectWait: config.DefaultReconnectWait,
 				},
 				BufferSize: defaultBufferSize,
 			},
@@ -63,8 +65,10 @@ func TestParse(t *testing.T) {
 			},
 			want: Config{
 				Config: config.Config{
-					URLs:    []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
-					Subject: "foo",
+					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
+					Subject:       "foo",
+					MaxReconnects: config.DefaultMaxReconnects,
+					ReconnectWait: config.DefaultReconnectWait,
 				},
 				BufferSize: 128,
 			},
@@ -80,8 +84,10 @@ func TestParse(t *testing.T) {
 			},
 			want: Config{
 				Config: config.Config{
-					URLs:    []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
-					Subject: "foo",
+					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
+					Subject:       "foo",
+					MaxReconnects: config.DefaultMaxReconnects,
+					ReconnectWait: config.DefaultReconnectWait,
 				},
 				BufferSize: defaultBufferSize,
 			},

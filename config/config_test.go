@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestParse(t *testing.T) {
@@ -42,8 +43,10 @@ func TestParse(t *testing.T) {
 				},
 			},
 			want: Config{
-				URLs:    []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
-				Subject: "foo",
+				URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
+				Subject:       "foo",
+				MaxReconnects: DefaultMaxReconnects,
+				ReconnectWait: DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -56,8 +59,10 @@ func TestParse(t *testing.T) {
 				},
 			},
 			want: Config{
-				URLs:    []string{"nats://127.0.0.1:1222"},
-				Subject: "foo",
+				URLs:          []string{"nats://127.0.0.1:1222"},
+				Subject:       "foo",
+				MaxReconnects: DefaultMaxReconnects,
+				ReconnectWait: DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -70,8 +75,10 @@ func TestParse(t *testing.T) {
 				},
 			},
 			want: Config{
-				URLs:    []string{"nats://token:127.0.0.1:1222"},
-				Subject: "foo",
+				URLs:          []string{"nats://token:127.0.0.1:1222"},
+				Subject:       "foo",
+				MaxReconnects: DefaultMaxReconnects,
+				ReconnectWait: DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -84,8 +91,10 @@ func TestParse(t *testing.T) {
 				},
 			},
 			want: Config{
-				URLs:    []string{"nats://admin:admin@127.0.0.1:1222"},
-				Subject: "foo",
+				URLs:          []string{"nats://admin:admin@127.0.0.1:1222"},
+				Subject:       "foo",
+				MaxReconnects: DefaultMaxReconnects,
+				ReconnectWait: DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -132,9 +141,11 @@ func TestParse(t *testing.T) {
 				},
 			},
 			want: Config{
-				URLs:     []string{"nats://127.0.0.1:1222"},
-				Subject:  "foo",
-				NKeyPath: "./config.go",
+				URLs:          []string{"nats://127.0.0.1:1222"},
+				Subject:       "foo",
+				NKeyPath:      "./config.go",
+				MaxReconnects: DefaultMaxReconnects,
+				ReconnectWait: DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -151,6 +162,8 @@ func TestParse(t *testing.T) {
 				URLs:                []string{"nats://127.0.0.1:1222"},
 				Subject:             "foo",
 				CredentialsFilePath: "./config.go",
+				MaxReconnects:       DefaultMaxReconnects,
+				ReconnectWait:       DefaultReconnectWait,
 			},
 			wantErr: false,
 		},
@@ -167,6 +180,27 @@ func TestParse(t *testing.T) {
 				URLs:           []string{"nats://127.0.0.1:1222"},
 				Subject:        "foo",
 				ConnectionName: "my_super_connection",
+				MaxReconnects:  DefaultMaxReconnects,
+				ReconnectWait:  DefaultReconnectWait,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, custom reconnect options",
+			args: args{
+				cfg: map[string]string{
+					KeyURLs:          "nats://127.0.0.1:1222",
+					KeySubject:       "foo",
+					KeyMaxReconnects: "20",
+					KeyReconnectWait: "10s",
+				},
+			},
+			want: Config{
+				URLs:           []string{"nats://127.0.0.1:1222"},
+				Subject:        "foo",
+				ConnectionName: "my_super_connection",
+				MaxReconnects:  20,
+				ReconnectWait:  time.Second * 10,
 			},
 			wantErr: false,
 		},
