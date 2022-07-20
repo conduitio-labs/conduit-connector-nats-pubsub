@@ -25,6 +25,7 @@ import (
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/nats-io/nats.go"
 )
 
 func TestSource_Open(t *testing.T) {
@@ -66,7 +67,10 @@ func TestSource_Read_PubSub(t *testing.T) {
 
 		subject := "foo_one"
 
-		source, err := createTestPubSub(t, subject)
+		source, err := createTestPubSub(t, map[string]string{
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: subject,
+		})
 		if err != nil {
 			t.Fatalf("create test pubsub: %v", err)
 
@@ -123,7 +127,10 @@ func TestSource_Read_PubSub(t *testing.T) {
 
 		subject := "foo_many"
 
-		source, err := createTestPubSub(t, subject)
+		source, err := createTestPubSub(t, map[string]string{
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: subject,
+		})
 		if err != nil {
 			t.Fatalf("create test pubsub: %v", err)
 
@@ -182,7 +189,10 @@ func TestSource_Read_PubSub(t *testing.T) {
 
 		subject := "no_messages"
 
-		source, err := createTestPubSub(t, subject)
+		source, err := createTestPubSub(t, map[string]string{
+			config.KeyURLs:    test.TestURL,
+			config.KeySubject: subject,
+		})
 		if err != nil {
 			t.Fatalf("create test pubsub: %v", err)
 
@@ -208,14 +218,70 @@ func TestSource_Read_PubSub(t *testing.T) {
 			return
 		}
 	})
+
+	t.Run("fail, many messages, slow consumer error", func(t *testing.T) {
+		t.Parallel()
+
+		subject := "slow_consumers_subj"
+
+		source, err := createTestPubSub(t, map[string]string{
+			config.KeyURLs:      test.TestURL,
+			config.KeySubject:   subject,
+			ConfigKeyBufferSize: "64",
+		})
+		if err != nil {
+			t.Fatalf("create test pubsub: %v", err)
+
+			return
+		}
+
+		t.Cleanup(func() {
+			if err := source.Teardown(context.Background()); err != nil {
+				t.Fatalf("teardown source: %v", err)
+			}
+		})
+
+		testConn, err := test.GetTestConnection()
+		if err != nil {
+			t.Fatalf("get test connection: %v", err)
+
+			return
+		}
+
+		for i := 0; i < 1_000_000; i++ {
+			err = testConn.Publish(subject, []byte(`{"level": "info"}`))
+			if err != nil {
+				t.Fatalf("publish test mesage: %v", err)
+
+				return
+			}
+
+			_, err := source.Read(context.Background())
+			if err != nil {
+				if errors.Is(err, sdk.ErrBackoffRetry) {
+					continue
+				}
+
+				if !errors.Is(errors.Unwrap(err), nats.ErrSlowConsumer) {
+					t.Fatalf("Source.Read expected slow consumer error, got %v", err)
+
+					return
+				}
+
+				return
+			}
+
+			continue
+		}
+
+		t.Fatalf("Source.Read didn't got the expected slow consumer error")
+	})
 }
 
-func createTestPubSub(t *testing.T, subject string) (sdk.Source, error) {
+func createTestPubSub(t *testing.T, cfg map[string]string) (sdk.Source, error) {
 	source := NewSource()
-	err := source.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
-	})
+
+	err := source.Configure(context.Background(), cfg)
 	if err != nil {
 		return nil, fmt.Errorf("configure source: %w", err)
 	}
