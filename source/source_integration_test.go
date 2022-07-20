@@ -274,7 +274,7 @@ func TestSource_Read_PubSub(t *testing.T) {
 			continue
 		}
 
-		t.Fatalf("Source.Read didn't got the expected slow consumer error")
+		t.Fatalf("Source.Read didn't get the expected slow consumer error")
 	})
 }
 
