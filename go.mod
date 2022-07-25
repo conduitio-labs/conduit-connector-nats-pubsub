@@ -9,7 +9,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/matryer/is v1.4.0
 	github.com/nats-io/nats.go v1.16.0
-	go.uber.org/goleak v1.1.12
 	go.uber.org/multierr v1.8.0
 )
 
@@ -34,6 +33,7 @@ require (
 	github.com/rs/zerolog v1.27.0 // indirect
 	go.buf.build/library/go-grpc/conduitio/conduit-connector-protocol v1.4.2 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/goleak v1.1.12 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/net v0.0.0-20220615171555-694bf12d69de // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect

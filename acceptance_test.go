@@ -23,7 +23,6 @@ import (
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
-	"go.uber.org/goleak"
 )
 
 type driver struct {
@@ -81,12 +80,6 @@ func TestAcceptance(t *testing.T) {
 				BeforeTest: func(t *testing.T) {
 					subject := t.Name() + uuid.New().String()
 					cfg[config.KeySubject] = subject
-				},
-				GoleakOptions: []goleak.Option{
-					// nats.go spawns a separate goroutine to process flush requests
-					goleak.IgnoreTopFunction("github.com/nats-io/nats%2ego.(*Conn).flusher"),
-					goleak.IgnoreTopFunction("sync.runtime_notifyListWait"),
-					goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 				},
 				Skip: []string{
 					// NATS PubSub doesn't handle position
