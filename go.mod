@@ -3,9 +3,11 @@ module github.com/conduitio-labs/conduit-connector-nats-pubsub
 go 1.18
 
 require (
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/conduitio/conduit-connector-sdk v0.2.1-0.20220530152250-733149cddc0b
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/google/uuid v1.3.0
+	github.com/matryer/is v1.4.0
 	github.com/nats-io/nats.go v1.16.0
 	go.uber.org/multierr v1.8.0
 )
@@ -21,7 +23,6 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/matryer/is v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
