@@ -16,12 +16,15 @@ package destination
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/matryer/is"
+	"github.com/nats-io/nats.go"
 )
 
 func TestDestination_OpenSuccess(t *testing.T) {
@@ -69,11 +72,24 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 
 	is := is.New(t)
 
+	subject := "foo_destination_write_one_pubsub"
+
+	testConn, err := nats.Connect(test.TestURL)
+	is.NoErr(err)
+
+	t.Cleanup(func() {
+		testConn.Flush()
+		testConn.Close()
+	})
+
+	subscription, err := testConn.SubscribeSync(subject)
+	is.NoErr(err)
+
 	destination := NewDestination()
 
-	err := destination.Configure(context.Background(), map[string]string{
+	err = destination.Configure(context.Background(), map[string]string{
 		config.KeyURLs:    test.TestURL,
-		config.KeySubject: "foo_destination_write_pubsub",
+		config.KeySubject: subject,
 	})
 	is.NoErr(err)
 
@@ -85,20 +101,38 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 	})
 	is.NoErr(err)
 
+	msg, err := subscription.NextMsg(time.Second * 2)
+	is.NoErr(err)
+
+	is.Equal(msg.Data, []byte("hello"))
+
 	err = destination.Teardown(context.Background())
 	is.NoErr(err)
 }
 
-func TestDestination_WriteManMessages(t *testing.T) {
+func TestDestination_WriteManyMessages(t *testing.T) {
 	t.Parallel()
 
 	is := is.New(t)
 
+	subject := "foo_destination_write_many_pubsub"
+
+	testConn, err := nats.Connect(test.TestURL)
+	is.NoErr(err)
+
+	t.Cleanup(func() {
+		testConn.Flush()
+		testConn.Close()
+	})
+
+	subscription, err := testConn.SubscribeSync(subject)
+	is.NoErr(err)
+
 	destination := NewDestination()
 
-	err := destination.Configure(context.Background(), map[string]string{
+	err = destination.Configure(context.Background(), map[string]string{
 		config.KeyURLs:    test.TestURL,
-		config.KeySubject: "foo_destination_write_pubsub",
+		config.KeySubject: subject,
 	})
 	is.NoErr(err)
 
@@ -107,9 +141,21 @@ func TestDestination_WriteManMessages(t *testing.T) {
 
 	for i := 0; i < 1000; i++ {
 		err = destination.Write(context.Background(), sdk.Record{
-			Payload: sdk.RawData([]byte("hello")),
+			Payload: sdk.RawData([]byte(fmt.Sprintf("message #%d", i))),
 		})
 		is.NoErr(err)
+	}
+
+	messages := make([]*nats.Msg, 0, 1000)
+	for i := 0; i < 1000; i++ {
+		message, err := subscription.NextMsg(time.Second * 2)
+		is.NoErr(err)
+
+		messages = append(messages, message)
+	}
+
+	for i, message := range messages {
+		is.Equal(message.Data, []byte(fmt.Sprintf("message #%d", i)))
 	}
 
 	err = destination.Teardown(context.Background())
