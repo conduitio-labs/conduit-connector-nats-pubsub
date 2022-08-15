@@ -21,11 +21,16 @@ import (
 )
 
 // TestURL is a URL of a test NATS server.
-var TestURL = "nats://127.0.0.1:4222"
+var (
+	TestURL             = "nats://127.0.0.1:4222"
+	TestURLWithPassword = "nats://admin:supersecret@127.0.0.1:4223" //nolint:gosec // test creds
+	TestURLWithToken    = "nats://s3cr3t@127.0.0.1:4224"            //nolint:gosec // test creds
+	TestURLWithNKey     = "nats://127.0.0.1:4225"
+)
 
 // GetTestConnection returns a connection to a test NATS server.
-func GetTestConnection() (*nats.Conn, error) {
-	conn, err := nats.Connect(TestURL)
+func GetTestConnection(url string) (*nats.Conn, error) {
+	conn, err := nats.Connect(url)
 	if err != nil {
 		return nil, fmt.Errorf("connect to NATS server: %s", err)
 	}

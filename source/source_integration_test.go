@@ -58,6 +58,97 @@ func TestSource_Open(t *testing.T) {
 	}
 }
 
+func TestSource_OpenWithPassword(t *testing.T) {
+	t.Parallel()
+
+	source := NewSource()
+	err := source.Configure(context.Background(), map[string]string{
+		config.KeyURLs:           test.TestURLWithPassword,
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
+	})
+	if err != nil {
+		t.Fatalf("configure source: %v", err)
+
+		return
+	}
+
+	err = source.Open(context.Background(), sdk.Position(nil))
+	if err != nil {
+		t.Fatalf("open source: %v", err)
+
+		return
+	}
+
+	err = source.Teardown(context.Background())
+	if err != nil {
+		t.Fatalf("teardown source: %v", err)
+
+		return
+	}
+}
+
+func TestSource_OpenWithToken(t *testing.T) {
+	t.Parallel()
+
+	source := NewSource()
+	err := source.Configure(context.Background(), map[string]string{
+		config.KeyURLs:           test.TestURLWithToken,
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
+	})
+	if err != nil {
+		t.Fatalf("configure source: %v", err)
+
+		return
+	}
+
+	err = source.Open(context.Background(), sdk.Position(nil))
+	if err != nil {
+		t.Fatalf("open source: %v", err)
+
+		return
+	}
+
+	err = source.Teardown(context.Background())
+	if err != nil {
+		t.Fatalf("teardown source: %v", err)
+
+		return
+	}
+}
+
+func TestSource_OpenWithNKey(t *testing.T) {
+	t.Parallel()
+
+	source := NewSource()
+	err := source.Configure(context.Background(), map[string]string{
+		config.KeyURLs:           test.TestURLWithNKey,
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
+		config.KeyNKeyPath:       "../test/fixtures/test_nkey_seed.txt",
+	})
+	if err != nil {
+		t.Fatalf("configure source: %v", err)
+
+		return
+	}
+
+	err = source.Open(context.Background(), sdk.Position(nil))
+	if err != nil {
+		t.Fatalf("open source: %v", err)
+
+		return
+	}
+
+	err = source.Teardown(context.Background())
+	if err != nil {
+		t.Fatalf("teardown source: %v", err)
+
+		return
+	}
+}
+
 func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 	t.Parallel()
 
@@ -79,7 +170,7 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 		}
 	})
 
-	testConn, err := test.GetTestConnection()
+	testConn, err := test.GetTestConnection(test.TestURL)
 	if err != nil {
 		t.Fatalf("get test connection: %v", err)
 
@@ -139,7 +230,7 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 		}
 	})
 
-	testConn, err := test.GetTestConnection()
+	testConn, err := test.GetTestConnection(test.TestURL)
 	if err != nil {
 		t.Fatalf("get test connection: %v", err)
 
@@ -237,7 +328,7 @@ func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
 		}
 	})
 
-	testConn, err := test.GetTestConnection()
+	testConn, err := test.GetTestConnection(test.TestURL)
 	if err != nil {
 		t.Fatalf("get test connection: %v", err)
 

@@ -91,10 +91,6 @@ func TestPubSubIterator_Next(t *testing.T) {
 		messages chan *nats.Msg
 	}
 
-	type args struct {
-		ctx context.Context
-	}
-
 	tests := []struct {
 		name     string
 		fields   fields
