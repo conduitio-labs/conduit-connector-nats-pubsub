@@ -111,7 +111,10 @@ func TestPubSubIterator_Next(t *testing.T) {
 				}
 			},
 			want: sdk.Record{
-				Payload: sdk.RawData([]byte(`"name": "bob"`)),
+				Operation: sdk.OperationCreate,
+				Payload: sdk.Change{
+					After: sdk.RawData([]byte(`"name": "bob"`)),
+				},
 			},
 			wantErr: false,
 		},
@@ -177,7 +180,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 				}
 
 				// we don't care about these fields
-				tt.want.CreatedAt = got.CreatedAt
+				tt.want.Metadata = got.Metadata
 				tt.want.Position = got.Position
 
 				if !reflect.DeepEqual(got, tt.want) {
@@ -211,7 +214,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 			},
 			wantErr: false,
 			want: sdk.Record{
-				Payload: sdk.RawData([]byte("sample")),
+				Operation: sdk.OperationCreate,
+				Payload: sdk.Change{
+					After: sdk.RawData([]byte("sample")),
+				},
 			},
 		},
 		{
@@ -223,7 +229,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 			},
 			wantErr: false,
 			want: sdk.Record{
-				Payload: sdk.RawData(nil),
+				Operation: sdk.OperationCreate,
+				Payload: sdk.Change{
+					After: sdk.RawData(nil),
+				},
 			},
 		},
 	}
@@ -247,7 +256,7 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 			copyWant := tt.want
 
 			// we don't care about time
-			copyWant.CreatedAt = got.CreatedAt
+			copyWant.Metadata = got.Metadata
 
 			// check if the position is a valid UUID
 			_, err = uuid.FromBytes(got.Position)

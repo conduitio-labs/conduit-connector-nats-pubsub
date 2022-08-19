@@ -95,11 +95,10 @@ func (i *Iterator) messageToRecord(msg *nats.Msg) (sdk.Record, error) {
 		return sdk.Record{}, fmt.Errorf("get position: %w", err)
 	}
 
-	return sdk.Record{
-		Position:  position,
-		CreatedAt: time.Now(),
-		Payload:   sdk.RawData(msg.Data),
-	}, nil
+	metadata := make(sdk.Metadata)
+	metadata.SetCreatedAt(time.Now())
+
+	return sdk.Util.Source.NewRecordCreate(position, metadata, nil, sdk.RawData(msg.Data)), nil
 }
 
 // getPosition returns the current iterator position.

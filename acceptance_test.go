@@ -27,41 +27,24 @@ import (
 
 type driver struct {
 	sdk.ConfigurableAcceptanceTestDriver
-
-	cache []sdk.Record
-}
-
-func (d driver) WriteToSource(t *testing.T, records []sdk.Record) []sdk.Record {
-	out := d.ConfigurableAcceptanceTestDriver.WriteToSource(t, records)
-
-	d.cache = append(d.cache, out...)
-
-	return out
 }
 
 func (d driver) ReadFromDestination(t *testing.T, records []sdk.Record) []sdk.Record {
-	if len(d.cache) != len(records) {
-		return records
-	}
-
-	out := make([]sdk.Record, 0, cap(records))
-	for i := 0; i < cap(records); i++ {
-		out = append(out, d.cache[i])
-		d.cache = d.cache[1:]
-	}
-
-	return out
+	return records
 }
 
-func (d driver) GenerateRecord(t *testing.T) sdk.Record {
+func (d driver) GenerateRecord(t *testing.T, operation sdk.Operation) sdk.Record {
 	id := gofakeit.Int32()
 
 	return sdk.Record{
-		Position: nil,
-		Metadata: nil,
-		Payload: sdk.RawData([]byte(
-			fmt.Sprintf(`"id":%d,"name":"%s"`, id, gofakeit.FirstName()),
-		)),
+		Position:  nil,
+		Operation: operation,
+		Metadata:  nil,
+		Payload: sdk.Change{
+			After: sdk.RawData([]byte(
+				fmt.Sprintf(`"id":%d,"name":"%s"`, id, gofakeit.FirstName()),
+			)),
+		},
 	}
 }
 
@@ -91,6 +74,5 @@ func TestAcceptance(t *testing.T) {
 				},
 			},
 		},
-		cache: make([]sdk.Record, 0),
 	})
 }
