@@ -44,7 +44,7 @@ type Source struct {
 
 // NewSource creates new instance of the Source.
 func NewSource() sdk.Source {
-	return &Source{}
+	return sdk.SourceWithMiddleware(&Source{}, sdk.DefaultSourceMiddleware()...)
 }
 
 // Parameters returns a map of named sdk.Parameters that describe how to configure the Source.
