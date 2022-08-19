@@ -44,7 +44,7 @@ func NewWriter(ctx context.Context, params WriterParams) (*Writer, error) {
 
 // Write writes directly and synchronously a record to a subject.
 func (w *Writer) Write(ctx context.Context, record sdk.Record) error {
-	return w.conn.Publish(w.subject, record.Payload.Bytes())
+	return w.conn.Publish(w.subject, record.Payload.After.Bytes())
 }
 
 // Close closes the underlying NATS connection.
