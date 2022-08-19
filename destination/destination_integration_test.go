@@ -96,14 +96,21 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 	err = destination.Open(context.Background())
 	is.NoErr(err)
 
-	err = destination.Write(context.Background(), sdk.Record{
-		Payload: sdk.RawData([]byte("hello")),
+	var count int
+	count, err = destination.Write(context.Background(), []sdk.Record{
+		{
+			Operation: sdk.OperationCreate,
+			Payload: sdk.Change{
+				After: sdk.RawData([]byte("hello")),
+			},
+		},
 	})
 	is.NoErr(err)
 
 	msg, err := subscription.NextMsg(time.Second * 2)
 	is.NoErr(err)
 
+	is.Equal(count, 1)
 	is.Equal(msg.Data, []byte("hello"))
 
 	err = destination.Teardown(context.Background())
@@ -139,12 +146,20 @@ func TestDestination_WriteManyMessages(t *testing.T) {
 	err = destination.Open(context.Background())
 	is.NoErr(err)
 
+	records := make([]sdk.Record, 1000)
 	for i := 0; i < 1000; i++ {
-		err = destination.Write(context.Background(), sdk.Record{
-			Payload: sdk.RawData([]byte(fmt.Sprintf("message #%d", i))),
-		})
-		is.NoErr(err)
+		records[i] = sdk.Record{
+			Operation: sdk.OperationCreate,
+			Payload: sdk.Change{
+				After: sdk.RawData([]byte(fmt.Sprintf("message #%d", i))),
+			},
+		}
 	}
+
+	var count int
+	count, err = destination.Write(context.Background(), records)
+	is.NoErr(err)
+	is.Equal(count, 1000)
 
 	messages := make([]*nats.Msg, 0, 1000)
 	for i := 0; i < 1000; i++ {

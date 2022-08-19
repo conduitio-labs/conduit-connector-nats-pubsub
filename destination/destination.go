@@ -42,7 +42,68 @@ type Destination struct {
 
 // NewDestination creates new instance of the Destination.
 func NewDestination() sdk.Destination {
-	return &Destination{}
+	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
+}
+
+// Parameters returns a map of named sdk.Parameters that describe how to configure the Destination.
+func (d *Destination) Parameters() map[string]sdk.Parameter {
+	return map[string]sdk.Parameter{
+		config.KeyURLs: {
+			Default:     "",
+			Required:    true,
+			Description: "The connection URLs pointed to NATS instances.",
+		},
+		config.KeySubject: {
+			Default:     "",
+			Required:    true,
+			Description: "A name of a subject to which the connector should write.",
+		},
+		config.KeyConnectionName: {
+			Default:     "conduit-connection-<uuid>",
+			Required:    false,
+			Description: "Optional connection name which will come in handy when it comes to monitoring.",
+		},
+		config.KeyNKeyPath: {
+			Default:     "",
+			Required:    false,
+			Description: "A path pointed to a NKey pair.",
+		},
+		config.KeyCredentialsFilePath: {
+			Default:     "",
+			Required:    false,
+			Description: "A path pointed to a credentials file.",
+		},
+		config.KeyTLSClientCertPath: {
+			Default:  "",
+			Required: false,
+			Description: "A path pointed to a TLS client certificate, must be present " +
+				"if tls.clientPrivateKeyPath field is also present.",
+		},
+		config.KeyTLSClientPrivateKeyPath: {
+			Default:  "",
+			Required: false,
+			Description: "A path pointed to a TLS client private key, must be present " +
+				"if tls.clientCertPath field is also present.",
+		},
+		config.KeyTLSRootCACertPath: {
+			Default:     "",
+			Required:    false,
+			Description: "A path pointed to a TLS root certificate, provide if you want to verify server’s identity.",
+		},
+		config.KeyMaxReconnects: {
+			Default:  "5",
+			Required: false,
+			Description: "Sets the number of reconnect attempts " +
+				"that will be tried before giving up. If negative, " +
+				"then it will never give up trying to reconnect.",
+		},
+		config.KeyReconnectWait: {
+			Default:  "5s",
+			Required: false,
+			Description: "Sets the time to backoff after attempting a reconnect " +
+				"to a server that we were already connected to previously.",
+		},
+	}
 }
 
 // Configure parses and initializes the config.
@@ -81,8 +142,15 @@ func (d *Destination) Open(ctx context.Context) error {
 }
 
 // Write writes a record into a Destination.
-func (d *Destination) Write(ctx context.Context, record sdk.Record) error {
-	return d.writer.Write(ctx, record)
+func (d *Destination) Write(ctx context.Context, records []sdk.Record) (int, error) {
+	for i, record := range records {
+		err := d.writer.Write(ctx, record)
+		if err != nil {
+			return i, fmt.Errorf("write: %w", err)
+		}
+	}
+
+	return len(records), nil
 }
 
 // Teardown gracefully closes connections.

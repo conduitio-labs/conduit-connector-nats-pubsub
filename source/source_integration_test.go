@@ -202,8 +202,8 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 		break
 	}
 
-	if !reflect.DeepEqual(record.Payload.Bytes(), []byte(`{"level": "info"}`)) {
-		t.Fatalf("Source.Read = %v, want %v", record.Payload.Bytes(), []byte(`{"level": "info"}`))
+	if !reflect.DeepEqual(record.Payload.After.Bytes(), []byte(`{"level": "info"}`)) {
+		t.Fatalf("Source.Read = %v, want %v", record.Payload.After.Bytes(), []byte(`{"level": "info"}`))
 
 		return
 	}
