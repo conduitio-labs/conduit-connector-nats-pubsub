@@ -1,7 +1,9 @@
 .PHONY: build test lint
 
+VERSION=$(shell git describe --tags --dirty --always)
+
 build:
-	go build -o conduit-connector-nats-pubsub cmd/nats/main.go
+	go build -ldflags "-X 'github.com/conduitio-labs/conduit-connector-nats-pubsub.version=${VERSION}'" -o conduit-connector-nats-pubsub cmd/connector/main.go
 
 test:
 	docker-compose -f test/docker-compose.yml up --quiet-pull -d
