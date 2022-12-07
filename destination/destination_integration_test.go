@@ -55,8 +55,10 @@ func TestDestination_OpenFail(t *testing.T) {
 	destination := NewDestination()
 
 	err := destination.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    "nats://localhost:6666",
-		config.KeySubject: "foo_destination",
+		config.KeyURLs:          "nats://localhost:6666",
+		config.KeySubject:       "foo_destination",
+		config.KeyMaxReconnects: "0",
+		config.KeyReconnectWait: "2s",
 	})
 	is.NoErr(err)
 

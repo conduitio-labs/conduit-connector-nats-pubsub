@@ -138,6 +138,10 @@ func (d *Destination) Open(ctx context.Context) error {
 		return fmt.Errorf("init pubsub writer: %w", err)
 	}
 
+	if conn.Status() == nats.CLOSED {
+		return fmt.Errorf("check connection to NATS: %w", nats.ErrConnectionClosed)
+	}
+
 	return nil
 }
 
