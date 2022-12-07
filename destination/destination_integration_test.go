@@ -16,6 +16,7 @@ package destination
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -62,8 +63,19 @@ func TestDestination_OpenFail(t *testing.T) {
 	})
 	is.NoErr(err)
 
-	err = destination.Open(context.Background())
-	is.True(err != nil)
+	// connections open is async event, so we can't predict if it drops here or at first send (ping)
+	_ = destination.Open(context.Background())
+
+	_, err = destination.Write(context.Background(), []sdk.Record{
+		{
+			Operation: sdk.OperationCreate,
+			Payload: sdk.Change{
+				After: sdk.RawData([]byte("hello")),
+			},
+		},
+	})
+
+	is.True(errors.Is(err, nats.ErrConnectionClosed))
 
 	err = destination.Teardown(context.Background())
 	is.NoErr(err)
