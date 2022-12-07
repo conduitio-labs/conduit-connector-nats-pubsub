@@ -49,4 +49,15 @@ services:
       interval: 10s
       retries: 5
     volumes:
-       - ./configs/server_with_nkey.conf:/nats-server.conf
+      - ./configs/server_with_nkey.conf:/nats-server.conf
+
+  nats_shutdown:
+    image: nats:2.8.4
+    ports:
+      - "4226:4222"
+      - "8226:8222"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8222/healthz" ]
+      timeout: 30s
+      interval: 10s
+      retries: 5

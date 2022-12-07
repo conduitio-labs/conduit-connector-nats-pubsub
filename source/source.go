@@ -144,6 +144,12 @@ func (s *Source) Open(ctx context.Context, position sdk.Position) error {
 		s.errC <- err
 	})
 
+	// if retries are ended, connection will be closed, but subscribe will continue listening nats.
+	// we should add closed error to prevent infinite listening
+	conn.SetClosedHandler(func(conn *nats.Conn) {
+		s.errC <- nats.ErrConnectionClosed
+	})
+
 	s.iterator, err = pubsub.NewIterator(ctx, pubsub.IteratorParams{
 		Conn:       conn,
 		BufferSize: s.config.BufferSize,

@@ -26,6 +26,7 @@ var (
 	TestURLWithPassword = "nats://admin:supersecret@127.0.0.1:4223" //nolint:gosec // test creds
 	TestURLWithToken    = "nats://s3cr3t@127.0.0.1:4224"            //nolint:gosec // test creds
 	TestURLWithNKey     = "nats://127.0.0.1:4225"
+	TestURLShutdown     = "nats://127.0.0.1:4226"
 )
 
 // GetTestConnection returns a connection to a test NATS server.

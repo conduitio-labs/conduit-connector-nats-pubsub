@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"reflect"
 	"testing"
 	"time"
@@ -53,6 +54,68 @@ func TestSource_Open(t *testing.T) {
 	err = source.Teardown(context.Background())
 	if err != nil {
 		t.Fatalf("teardown source: %v", err)
+
+		return
+	}
+}
+
+func TestSource_Open_failure(t *testing.T) {
+	t.Parallel()
+
+	source := NewSource()
+	err := source.Configure(context.Background(), map[string]string{
+		config.KeyURLs:           "nats://127.0.0.1:4233", // wrong port for connection
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
+		config.KeyMaxReconnects:  "0", // setting no reconnects to avoid sleep time
+		config.KeyReconnectWait:  "2s",
+	})
+	if err != nil {
+		t.Fatalf("configure source: %v", err)
+
+		return
+	}
+
+	err = source.Open(context.Background(), sdk.Position(nil))
+	if !errors.Is(err, nats.ErrConnectionClosed) {
+		t.Fatalf("expected error %s, got %s", nats.ErrConnectionClosed, err)
+	}
+}
+
+func TestSource_Open_failureAfterConnect(t *testing.T) {
+	t.Parallel()
+
+	source := NewSource()
+	err := source.Configure(context.Background(), map[string]string{
+		config.KeyURLs:           test.TestURLShutdown,
+		config.KeySubject:        "foo",
+		config.KeyConnectionName: "super_connection",
+		config.KeyMaxReconnects:  "0", // setting no reconnects to avoid sleep time
+		config.KeyReconnectWait:  "2s",
+	})
+	if err != nil {
+		t.Fatalf("configure source: %v", err)
+
+		return
+	}
+
+	err = source.Open(context.Background(), sdk.Position(nil))
+	if err != nil {
+		t.Fatalf("open source: %v", err)
+
+		return
+	}
+
+	com := exec.Command("docker", "stop", "test_nats_shutdown_1")
+	if err = com.Run(); err != nil {
+		t.Fatalf("run command: %v", err)
+
+		return
+	}
+
+	err = source.Teardown(context.Background())
+	if !errors.Is(err, nats.ErrConnectionClosed) {
+		t.Fatalf("expected error %s, got %s", nats.ErrConnectionClosed, err)
 
 		return
 	}

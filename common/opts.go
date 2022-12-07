@@ -55,6 +55,7 @@ func GetConnectionOptions(config config.Config) ([]nats.Option, error) {
 
 	opts = append(opts, nats.MaxReconnects(config.MaxReconnects))
 	opts = append(opts, nats.ReconnectWait(config.ReconnectWait))
+	opts = append(opts, nats.RetryOnFailedConnect(true))
 
 	return opts, nil
 }
