@@ -78,7 +78,7 @@ func TestSource_Open_failure(t *testing.T) {
 
 	err = source.Open(context.Background(), sdk.Position(nil))
 	if !errors.Is(err, nats.ErrConnectionClosed) {
-		t.Fatalf("expected error %s, got %s", nats.ErrConnectionClosed, err)
+		t.Fatalf("expected error %s, got %v", nats.ErrConnectionClosed, err)
 	}
 }
 
@@ -314,7 +314,7 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 
 		record, err := source.Read(ctx)
 		if err != nil {
-			if errors.Is(err, sdk.ErrBackoffRetry) {
+			if errors.Is(err, sdk.ErrBackoffRetry) || errors.Is(err, nats.ErrSlowConsumer) {
 				i--
 
 				continue
