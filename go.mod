@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/matryer/is v1.4.0
 	github.com/nats-io/nats.go v1.21.0
-	go.uber.org/multierr v1.8.0
+	go.uber.org/multierr v1.9.0
 )
 
 require (
