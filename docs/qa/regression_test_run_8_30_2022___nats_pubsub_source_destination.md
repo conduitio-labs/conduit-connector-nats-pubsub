@@ -1,3 +1,9 @@
+**Regression Test Run 8/30/2022 - NATS PubSub Source/Destination**
+
+**branch:** https://github.com/conduitio-labs/conduit-connector-nats-pubsub/tree/main
+
+**commit:** 3177cb52e9eb74945c2eb87443cc8461796a1699
+
 | ID       | Title                                                                                                                                                                                                                                                     | Status | Comment |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------- |
 | T2831936 | Data from two different NATS PubSub source connectors are transferred to the File Destination connector                                                                                                                                                   | Passed |         |
