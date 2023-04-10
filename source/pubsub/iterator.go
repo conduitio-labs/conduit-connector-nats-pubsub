@@ -40,7 +40,7 @@ type IteratorParams struct {
 }
 
 // NewIterator creates new instance of the Iterator.
-func NewIterator(ctx context.Context, params IteratorParams) (*Iterator, error) {
+func NewIterator(params IteratorParams) (*Iterator, error) {
 	messages := make(chan *nats.Msg, params.BufferSize)
 
 	subscription, err := params.Conn.ChanSubscribe(params.Subject, messages)
@@ -56,7 +56,7 @@ func NewIterator(ctx context.Context, params IteratorParams) (*Iterator, error) 
 }
 
 // HasNext checks is the iterator has messages.
-func (i *Iterator) HasNext(ctx context.Context) bool {
+func (i *Iterator) HasNext() bool {
 	return len(i.messages) > 0
 }
 

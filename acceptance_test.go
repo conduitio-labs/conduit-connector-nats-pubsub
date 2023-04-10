@@ -29,11 +29,11 @@ type driver struct {
 	sdk.ConfigurableAcceptanceTestDriver
 }
 
-func (d driver) ReadFromDestination(t *testing.T, records []sdk.Record) []sdk.Record {
+func (d driver) ReadFromDestination(_ *testing.T, records []sdk.Record) []sdk.Record {
 	return records
 }
 
-func (d driver) GenerateRecord(t *testing.T, operation sdk.Operation) sdk.Record {
+func (d driver) GenerateRecord(_ *testing.T, operation sdk.Operation) sdk.Record {
 	id := gofakeit.Int32()
 
 	return sdk.Record{

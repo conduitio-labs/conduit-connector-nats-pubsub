@@ -75,7 +75,7 @@ func TestPubSubIterator_HasNext(t *testing.T) {
 				tt.fillFunc(tt.fields.messages)
 			}
 
-			if got := i.HasNext(context.Background()); got != tt.want {
+			if got := i.HasNext(); got != tt.want {
 				t.Errorf("PubSubIterator.HasNext() = %v, want %v", got, tt.want)
 
 				return
@@ -153,11 +153,11 @@ func TestPubSubIterator_Next(t *testing.T) {
 				tt.fillFunc(tt.fields.messages)
 			}
 
-			if !i.HasNext(context.Background()) {
+			if !i.HasNext() {
 				return
 			}
 
-			for i.HasNext(context.Background()) {
+			for i.HasNext() {
 				var ctx context.Context
 				var cancel context.CancelFunc
 
