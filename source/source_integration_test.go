@@ -154,7 +154,7 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 
 	subject := "foo_one"
 
-	source, err := createTestPubSub(t, map[string]string{
+	source, err := createTestPubSub(map[string]string{
 		config.KeyURLs:    test.TestURL,
 		config.KeySubject: subject,
 	})
@@ -214,7 +214,7 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 
 	subject := "foo_many"
 
-	source, err := createTestPubSub(t, map[string]string{
+	source, err := createTestPubSub(map[string]string{
 		config.KeyURLs:    test.TestURL,
 		config.KeySubject: subject,
 	})
@@ -276,7 +276,7 @@ func TestSource_ReadPubSubSuccessNoMessagesBackoff(t *testing.T) {
 
 	subject := "no_messages"
 
-	source, err := createTestPubSub(t, map[string]string{
+	source, err := createTestPubSub(map[string]string{
 		config.KeyURLs:    test.TestURL,
 		config.KeySubject: subject,
 	})
@@ -311,7 +311,7 @@ func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
 
 	subject := "slow_consumers_subj"
 
-	source, err := createTestPubSub(t, map[string]string{
+	source, err := createTestPubSub(map[string]string{
 		config.KeyURLs:      test.TestURL,
 		config.KeySubject:   subject,
 		ConfigKeyBufferSize: "64",
@@ -364,7 +364,7 @@ func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
 	t.Fatalf("Source.Read didn't get the expected slow consumer error")
 }
 
-func createTestPubSub(t *testing.T, cfg map[string]string) (sdk.Source, error) {
+func createTestPubSub(cfg map[string]string) (sdk.Source, error) {
 	source := NewSource()
 
 	err := source.Configure(context.Background(), cfg)
