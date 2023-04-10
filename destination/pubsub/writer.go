@@ -15,8 +15,6 @@
 package pubsub
 
 import (
-	"context"
-
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/nats-io/nats.go"
 )
@@ -35,7 +33,7 @@ type WriterParams struct {
 }
 
 // NewWriter creates new instance of the Writer.
-func NewWriter(ctx context.Context, params WriterParams) (*Writer, error) {
+func NewWriter(params WriterParams) (*Writer, error) {
 	return &Writer{
 		conn:    params.Conn,
 		subject: params.Subject,
@@ -43,12 +41,12 @@ func NewWriter(ctx context.Context, params WriterParams) (*Writer, error) {
 }
 
 // Write writes directly and synchronously a record to a subject.
-func (w *Writer) Write(ctx context.Context, record sdk.Record) error {
+func (w *Writer) Write(record sdk.Record) error {
 	return w.conn.Publish(w.subject, record.Payload.After.Bytes())
 }
 
 // Close closes the underlying NATS connection.
-func (w *Writer) Close(ctx context.Context) error {
+func (w *Writer) Close() error {
 	if w.conn != nil {
 		w.conn.Close()
 	}
