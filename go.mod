@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/conduitio/conduit-connector-sdk v0.7.2
-	github.com/go-playground/validator/v10 v10.15.2
+	github.com/go-playground/validator/v10 v10.15.3
 	github.com/google/uuid v1.3.1
 	github.com/matryer/is v1.4.1
 	github.com/nats-io/nats.go v1.28.0
