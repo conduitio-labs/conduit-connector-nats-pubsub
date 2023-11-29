@@ -6,8 +6,8 @@ The [NATS](https://nats.io/) PubSub connector is one of [Conduit](https://github
 
 ### Prerequisites
 
-- [Go](https://go.dev/) 1.20
-- (optional) [golangci-lint](https://github.com/golangci/golangci-lint) 1.45.2
+- [Go](https://go.dev/) 1.21
+- (optional) [golangci-lint](https://github.com/golangci/golangci-lint) 1.55.2
 - [NATS](https://nats.io/download/) 2.8.4
 
 ### How to build it
