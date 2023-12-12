@@ -8,7 +8,7 @@ require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/conduitio/conduit-connector-sdk v0.8.0
 	github.com/go-playground/validator/v10 v10.16.0
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 	github.com/matryer/is v1.4.1
 	github.com/nats-io/nats.go v1.31.0
 	go.uber.org/multierr v1.11.0
