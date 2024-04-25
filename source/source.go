@@ -140,7 +140,7 @@ func (s *Source) Open(context.Context, sdk.Position) error {
 
 	// register an error handler for async errors,
 	// the Source listens to them within the Read method and propagates the error if it occurs.
-	conn.SetErrorHandler(func(con *nats.Conn, sub *nats.Subscription, err error) {
+	conn.SetErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
 		s.errC <- err
 	})
 
