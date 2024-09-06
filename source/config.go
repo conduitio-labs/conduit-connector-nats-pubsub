@@ -16,7 +16,6 @@ package source
 
 import (
 	"fmt"
-
 	"strconv"
 
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"

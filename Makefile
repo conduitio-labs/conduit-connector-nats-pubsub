@@ -11,6 +11,10 @@ test:
 		docker-compose -f test/docker-compose.yml down; \
 		exit $$ret
 
+.PHONY: generate
+generate:
+	go generate ./...
+
 .PHONY: lint
 lint:
 	golangci-lint run

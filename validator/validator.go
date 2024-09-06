@@ -70,8 +70,8 @@ func requiredWithErr(name, with string) error {
 }
 
 // minErr returns the formatted min error.
-func minErr(name, min string) error {
-	return fmt.Errorf("%q value must be greater than or equal to %s", name, min)
+func minErr(name, val string) error {
+	return fmt.Errorf("%q value must be greater than or equal to %s", name, val)
 }
 
 // fileErr returns the formatted file error.
