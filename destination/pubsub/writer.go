@@ -15,7 +15,7 @@
 package pubsub
 
 import (
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/nats-io/nats.go"
 )
 
@@ -41,7 +41,7 @@ func NewWriter(params WriterParams) (*Writer, error) {
 }
 
 // Write writes directly and synchronously a record to a subject.
-func (w *Writer) Write(record sdk.Record) error {
+func (w *Writer) Write(record opencdc.Record) error {
 	return w.conn.Publish(w.subject, record.Payload.After.Bytes())
 }
 

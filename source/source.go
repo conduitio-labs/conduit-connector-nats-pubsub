@@ -20,8 +20,9 @@ import (
 	"strings"
 
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/source/pubsub"
+	"github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/nats-io/nats.go"
 )
@@ -29,7 +30,7 @@ import (
 // Iterator defines an iterator interface.
 type Iterator interface {
 	HasNext() bool
-	Next(ctx context.Context) (sdk.Record, error)
+	Next(ctx context.Context) (opencdc.Record, error)
 	Stop() error
 }
 
@@ -47,87 +48,78 @@ func NewSource() sdk.Source {
 	return sdk.SourceWithMiddleware(&Source{}, sdk.DefaultSourceMiddleware()...)
 }
 
-// Parameters returns a map of named sdk.Parameters that describe how to configure the Source.
-func (s *Source) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
-		config.KeyURLs: {
+// Parameters returns a map of named config.Parameters that describe how to configure the Source.
+func (s *Source) Parameters() config.Parameters {
+	return map[string]config.Parameter{
+		common.KeyURLs: {
 			Default:     "",
-			Required:    true,
 			Description: "The connection URLs pointed to NATS instances.",
+			Validations: []config.Validation{config.ValidationRequired{}},
 		},
-		config.KeySubject: {
+		common.KeySubject: {
 			Default:     "",
-			Required:    true,
 			Description: "A name of a subject from which the connector should read.",
+			Validations: []config.Validation{config.ValidationRequired{}},
 		},
-		config.KeyConnectionName: {
+		common.KeyConnectionName: {
 			Default:     "conduit-connection-<uuid>",
-			Required:    false,
 			Description: "Optional connection name which will come in handy when it comes to monitoring.",
 		},
-		config.KeyNKeyPath: {
+		common.KeyNKeyPath: {
 			Default:     "",
-			Required:    false,
 			Description: "A path pointed to a NKey pair.",
 		},
-		config.KeyCredentialsFilePath: {
+		common.KeyCredentialsFilePath: {
 			Default:     "",
-			Required:    false,
 			Description: "A path pointed to a credentials file.",
 		},
-		config.KeyTLSClientCertPath: {
-			Default:  "",
-			Required: false,
+		common.KeyTLSClientCertPath: {
+			Default: "",
 			Description: "A path pointed to a TLS client certificate, must be present " +
 				"if tls.clientPrivateKeyPath field is also present.",
 		},
-		config.KeyTLSClientPrivateKeyPath: {
-			Default:  "",
-			Required: false,
+		common.KeyTLSClientPrivateKeyPath: {
+			Default: "",
 			Description: "A path pointed to a TLS client private key, must be present " +
 				"if tls.clientCertPath field is also present.",
 		},
-		config.KeyTLSRootCACertPath: {
+		common.KeyTLSRootCACertPath: {
 			Default:     "",
-			Required:    false,
 			Description: "A path pointed to a TLS root certificate, provide if you want to verify server’s identity.",
 		},
-		config.KeyMaxReconnects: {
-			Default:  "5",
-			Required: false,
+		common.KeyMaxReconnects: {
+			Default: "5",
 			Description: "Sets the number of reconnect attempts " +
 				"that will be tried before giving up. If negative, " +
 				"then it will never give up trying to reconnect.",
 		},
-		config.KeyReconnectWait: {
-			Default:  "5s",
-			Required: false,
+		common.KeyReconnectWait: {
+			Default: "5s",
 			Description: "Sets the time to backoff after attempting a reconnect " +
 				"to a server that we were already connected to previously.",
 		},
 		ConfigKeyBufferSize: {
 			Default:     "1024",
-			Required:    false,
 			Description: "A buffer size for consumed messages.",
 		},
 	}
 }
 
 // Configure parses and initializes the config.
-func (s *Source) Configure(_ context.Context, cfg map[string]string) error {
-	config, err := Parse(cfg)
+func (s *Source) Configure(_ context.Context, cfg config.Config) error {
+	var err error
+	s.config, err = Parse(cfg)
 	if err != nil {
 		return fmt.Errorf("parse config: %w", err)
 	}
 
-	s.config = config
 	s.errC = make(chan error, 1)
 
 	return nil
 }
 
 // Open opens a connection to NATS and initializes iterators.
-func (s *Source) Open(context.Context, sdk.Position) error {
+func (s *Source) Open(context.Context, opencdc.Position) error {
 	opts, err := common.GetConnectionOptions(s.config.Config)
 	if err != nil {
 		return fmt.Errorf("get connection options: %w", err)
@@ -159,19 +151,19 @@ func (s *Source) Open(context.Context, sdk.Position) error {
 // Read fetches a record from an iterator.
 // If there's no record will return sdk.ErrBackoffRetry.
 // If the Source's errC is not empty will return the underlying error.
-func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
+func (s *Source) Read(ctx context.Context) (opencdc.Record, error) {
 	select {
 	case err := <-s.errC:
-		return sdk.Record{}, fmt.Errorf("got an async error: %w", err)
+		return opencdc.Record{}, fmt.Errorf("got an async error: %w", err)
 
 	default:
 		if !s.iterator.HasNext() {
-			return sdk.Record{}, sdk.ErrBackoffRetry
+			return opencdc.Record{}, sdk.ErrBackoffRetry
 		}
 
 		record, err := s.iterator.Next(ctx)
 		if err != nil {
-			return sdk.Record{}, fmt.Errorf("read next record: %w", err)
+			return opencdc.Record{}, fmt.Errorf("read next record: %w", err)
 		}
 
 		return record, nil

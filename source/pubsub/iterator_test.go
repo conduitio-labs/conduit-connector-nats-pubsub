@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
@@ -94,7 +94,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 		fields   fields
 		timeout  time.Duration
 		fillFunc func(chan *nats.Msg)
-		want     sdk.Record
+		want     opencdc.Record
 		wantErr  bool
 	}{
 		{
@@ -108,10 +108,10 @@ func TestPubSubIterator_Next(t *testing.T) {
 					Data:    []byte(`"name": "bob"`),
 				}
 			},
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData([]byte(`"name": "bob"`)),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData([]byte(`"name": "bob"`)),
 				},
 			},
 			wantErr: false,
@@ -122,7 +122,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 				messages: make(chan *nats.Msg, 1),
 			},
 			fillFunc: nil,
-			want:     sdk.Record{},
+			want:     opencdc.Record{},
 			wantErr:  false,
 		},
 		{
@@ -132,7 +132,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 			},
 			timeout:  20 * time.Millisecond,
 			fillFunc: nil,
-			want:     sdk.Record{},
+			want:     opencdc.Record{},
 			wantErr:  false,
 		},
 	}
@@ -198,7 +198,7 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		want    sdk.Record
+		want    opencdc.Record
 	}{
 		{
 			name: "success",
@@ -209,10 +209,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData([]byte("sample")),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData([]byte("sample")),
 				},
 			},
 		},
@@ -224,10 +224,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData(nil),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData(nil),
 				},
 			},
 		},

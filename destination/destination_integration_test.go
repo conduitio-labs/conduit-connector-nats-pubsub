@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/matryer/is"
 	"github.com/nats-io/nats.go"
 )
@@ -35,8 +35,8 @@ func TestDestination_OpenSuccess(t *testing.T) {
 	destination := NewDestination()
 
 	err := destination.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: "foo_destination",
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: "foo_destination",
 	})
 	is.NoErr(err)
 
@@ -55,8 +55,8 @@ func TestDestination_OpenFail(t *testing.T) {
 	destination := NewDestination()
 
 	err := destination.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    "nats://localhost:6666",
-		config.KeySubject: "foo_destination",
+		common.KeyURLs:    "nats://localhost:6666",
+		common.KeySubject: "foo_destination",
 	})
 	is.NoErr(err)
 
@@ -88,8 +88,8 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 	destination := NewDestination()
 
 	err = destination.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: subject,
 	})
 	is.NoErr(err)
 
@@ -97,11 +97,11 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 	is.NoErr(err)
 
 	var count int
-	count, err = destination.Write(context.Background(), []sdk.Record{
+	count, err = destination.Write(context.Background(), []opencdc.Record{
 		{
-			Operation: sdk.OperationCreate,
-			Payload: sdk.Change{
-				After: sdk.RawData([]byte("hello")),
+			Operation: opencdc.OperationCreate,
+			Payload: opencdc.Change{
+				After: opencdc.RawData([]byte("hello")),
 			},
 		},
 	})
@@ -138,20 +138,20 @@ func TestDestination_WriteManyMessages(t *testing.T) {
 	destination := NewDestination()
 
 	err = destination.Configure(context.Background(), map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: subject,
 	})
 	is.NoErr(err)
 
 	err = destination.Open(context.Background())
 	is.NoErr(err)
 
-	records := make([]sdk.Record, 1000)
+	records := make([]opencdc.Record, 1000)
 	for i := 0; i < 1000; i++ {
-		records[i] = sdk.Record{
-			Operation: sdk.OperationCreate,
-			Payload: sdk.Change{
-				After: sdk.RawData([]byte(fmt.Sprintf("message #%d", i))),
+		records[i] = opencdc.Record{
+			Operation: opencdc.OperationCreate,
+			Payload: opencdc.Change{
+				After: opencdc.RawData([]byte(fmt.Sprintf("message #%d", i))),
 			},
 		}
 	}

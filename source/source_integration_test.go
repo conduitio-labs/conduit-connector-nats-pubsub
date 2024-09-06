@@ -22,8 +22,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/nats-io/nats.go"
 )
@@ -33,9 +34,9 @@ func TestSource_Open(t *testing.T) {
 
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.KeyURLs:           test.TestURL,
-		config.KeySubject:        "foo",
-		config.KeyConnectionName: "super_connection",
+		common.KeyURLs:           test.TestURL,
+		common.KeySubject:        "foo",
+		common.KeyConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -43,7 +44,7 @@ func TestSource_Open(t *testing.T) {
 		return
 	}
 
-	err = source.Open(context.Background(), sdk.Position(nil))
+	err = source.Open(context.Background(), opencdc.Position(nil))
 	if err != nil {
 		t.Fatalf("open source: %v", err)
 
@@ -63,9 +64,9 @@ func TestSource_OpenWithPassword(t *testing.T) {
 
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.KeyURLs:           test.TestURLWithPassword,
-		config.KeySubject:        "foo",
-		config.KeyConnectionName: "super_connection",
+		common.KeyURLs:           test.TestURLWithPassword,
+		common.KeySubject:        "foo",
+		common.KeyConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -73,7 +74,7 @@ func TestSource_OpenWithPassword(t *testing.T) {
 		return
 	}
 
-	err = source.Open(context.Background(), sdk.Position(nil))
+	err = source.Open(context.Background(), opencdc.Position(nil))
 	if err != nil {
 		t.Fatalf("open source: %v", err)
 
@@ -93,9 +94,9 @@ func TestSource_OpenWithToken(t *testing.T) {
 
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.KeyURLs:           test.TestURLWithToken,
-		config.KeySubject:        "foo",
-		config.KeyConnectionName: "super_connection",
+		common.KeyURLs:           test.TestURLWithToken,
+		common.KeySubject:        "foo",
+		common.KeyConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -103,7 +104,7 @@ func TestSource_OpenWithToken(t *testing.T) {
 		return
 	}
 
-	err = source.Open(context.Background(), sdk.Position(nil))
+	err = source.Open(context.Background(), opencdc.Position(nil))
 	if err != nil {
 		t.Fatalf("open source: %v", err)
 
@@ -123,10 +124,10 @@ func TestSource_OpenWithNKey(t *testing.T) {
 
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		config.KeyURLs:           test.TestURLWithNKey,
-		config.KeySubject:        "foo",
-		config.KeyConnectionName: "super_connection",
-		config.KeyNKeyPath:       "../test/fixtures/test_nkey_seed.txt",
+		common.KeyURLs:           test.TestURLWithNKey,
+		common.KeySubject:        "foo",
+		common.KeyConnectionName: "super_connection",
+		common.KeyNKeyPath:       "../test/fixtures/test_nkey_seed.txt",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -134,7 +135,7 @@ func TestSource_OpenWithNKey(t *testing.T) {
 		return
 	}
 
-	err = source.Open(context.Background(), sdk.Position(nil))
+	err = source.Open(context.Background(), opencdc.Position(nil))
 	if err != nil {
 		t.Fatalf("open source: %v", err)
 
@@ -155,8 +156,8 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 	subject := "foo_one"
 
 	source, err := createTestPubSub(map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -187,7 +188,7 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	var record sdk.Record
+	var record opencdc.Record
 	for {
 		record, err = source.Read(ctx)
 		if err != nil {
@@ -215,8 +216,8 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 	subject := "foo_many"
 
 	source, err := createTestPubSub(map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -240,7 +241,7 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	records := make([]sdk.Record, 0)
+	records := make([]opencdc.Record, 0)
 	for i := 0; i < 128; i++ {
 		err = testConn.Publish(subject, []byte(`{"level": "info"}`))
 		if err != nil {
@@ -277,8 +278,8 @@ func TestSource_ReadPubSubSuccessNoMessagesBackoff(t *testing.T) {
 	subject := "no_messages"
 
 	source, err := createTestPubSub(map[string]string{
-		config.KeyURLs:    test.TestURL,
-		config.KeySubject: subject,
+		common.KeyURLs:    test.TestURL,
+		common.KeySubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -312,8 +313,8 @@ func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
 	subject := "slow_consumers_subj"
 
 	source, err := createTestPubSub(map[string]string{
-		config.KeyURLs:      test.TestURL,
-		config.KeySubject:   subject,
+		common.KeyURLs:      test.TestURL,
+		common.KeySubject:   subject,
 		ConfigKeyBufferSize: "64",
 	})
 	if err != nil {
@@ -372,7 +373,7 @@ func createTestPubSub(cfg map[string]string) (sdk.Source, error) {
 		return nil, fmt.Errorf("configure source: %w", err)
 	}
 
-	err = source.Open(context.Background(), sdk.Position(nil))
+	err = source.Open(context.Background(), opencdc.Position(nil))
 	if err != nil {
 		return nil, fmt.Errorf("open source: %w", err)
 	}

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/validator"
 )
 
@@ -32,20 +32,20 @@ const ConfigKeyBufferSize = "bufferSize"
 
 // Config holds source specific configurable values.
 type Config struct {
-	config.Config
+	common.Config
 
 	BufferSize int `key:"bufferSize" validate:"omitempty,min=64"`
 }
 
 // Parse maps the incoming map to the Config and validates it.
 func Parse(cfg map[string]string) (Config, error) {
-	common, err := config.Parse(cfg)
+	commonCfg, err := common.Parse(cfg)
 	if err != nil {
 		return Config{}, fmt.Errorf("parse common config: %w", err)
 	}
 
 	sourceConfig := Config{
-		Config: common,
+		Config: commonCfg,
 	}
 
 	if err := sourceConfig.parseBufferSize(cfg[ConfigKeyBufferSize]); err != nil {

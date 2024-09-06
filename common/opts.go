@@ -17,12 +17,11 @@ package common
 import (
 	"fmt"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
 	"github.com/nats-io/nats.go"
 )
 
 // GetConnectionOptions returns connection options based on the provided config.
-func GetConnectionOptions(config config.Config) ([]nats.Option, error) {
+func GetConnectionOptions(config Config) ([]nats.Option, error) {
 	var opts []nats.Option
 
 	if config.ConnectionName != "" {

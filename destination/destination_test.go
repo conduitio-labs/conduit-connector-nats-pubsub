@@ -18,7 +18,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 )
 
 func TestDestination_Configure(t *testing.T) {
@@ -39,8 +39,8 @@ func TestDestination_Configure(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:4222",
-					config.KeySubject: "foo",
+					common.KeyURLs:    "nats://127.0.0.1:4222",
+					common.KeySubject: "foo",
 				},
 			},
 			wantErr: false,
@@ -58,7 +58,7 @@ func TestDestination_Configure(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				cfg: map[string]string{
-					config.KeyURLs: "nats://127.0.0.1:4222",
+					common.KeyURLs: "nats://127.0.0.1:4222",
 				},
 			},
 			wantErr: true,

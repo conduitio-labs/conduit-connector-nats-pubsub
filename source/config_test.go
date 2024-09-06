@@ -19,7 +19,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 )
 
 func TestParse(t *testing.T) {
@@ -39,16 +39,16 @@ func TestParse(t *testing.T) {
 			name: "success, default values",
 			args: args{
 				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject: "foo",
+					common.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					common.KeySubject: "foo",
 				},
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: common.DefaultMaxReconnects,
+					ReconnectWait: common.DefaultReconnectWait,
 				},
 				BufferSize: defaultBufferSize,
 			},
@@ -58,17 +58,17 @@ func TestParse(t *testing.T) {
 			name: "success, set buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
+					common.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					common.KeySubject:   "foo",
 					ConfigKeyBufferSize: "128",
 				},
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: common.DefaultMaxReconnects,
+					ReconnectWait: common.DefaultReconnectWait,
 				},
 				BufferSize: 128,
 			},
@@ -78,16 +78,16 @@ func TestParse(t *testing.T) {
 			name: "success, default buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject: "foo",
+					common.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					common.KeySubject: "foo",
 				},
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: common.DefaultMaxReconnects,
+					ReconnectWait: common.DefaultReconnectWait,
 				},
 				BufferSize: defaultBufferSize,
 			},
@@ -97,8 +97,8 @@ func TestParse(t *testing.T) {
 			name: "fail, invalid buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
+					common.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					common.KeySubject:   "foo",
 					ConfigKeyBufferSize: "8",
 				},
 			},
@@ -109,8 +109,8 @@ func TestParse(t *testing.T) {
 			name: "fail, invalid buffer size",
 			args: args{
 				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
+					common.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+					common.KeySubject:   "foo",
 					ConfigKeyBufferSize: "what",
 				},
 			},
@@ -130,7 +130,7 @@ func TestParse(t *testing.T) {
 				return
 			}
 
-			if strings.HasPrefix(got.ConnectionName, config.DefaultConnectionNamePrefix) {
+			if strings.HasPrefix(got.ConnectionName, common.DefaultConnectionNamePrefix) {
 				tt.want.ConnectionName = got.ConnectionName
 			}
 
