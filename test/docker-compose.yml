@@ -8,7 +8,7 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
   
   nats_with_password:
     image: nats:2.10.20-alpine3.20
@@ -19,7 +19,7 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
     volumes:
        - ./configs/server_with_password.conf:/etc/nats/nats-server.conf
 
@@ -32,7 +32,7 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
     volumes:
        - ./configs/server_with_token.conf:/etc/nats/nats-server.conf
       
@@ -45,6 +45,6 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
     volumes:
        - ./configs/server_with_nkey.conf:/etc/nats/nats-server.conf
