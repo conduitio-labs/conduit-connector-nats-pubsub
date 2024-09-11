@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
@@ -30,13 +29,11 @@ import (
 )
 
 func TestSource_Open(t *testing.T) {
-	t.Parallel()
-
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		common.KeyURLs:           test.TestURL,
-		common.KeySubject:        "foo",
-		common.KeyConnectionName: "super_connection",
+		ConfigUrls:           test.TestURL,
+		ConfigSubject:        "foo",
+		ConfigConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -60,13 +57,11 @@ func TestSource_Open(t *testing.T) {
 }
 
 func TestSource_OpenWithPassword(t *testing.T) {
-	t.Parallel()
-
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		common.KeyURLs:           test.TestURLWithPassword,
-		common.KeySubject:        "foo",
-		common.KeyConnectionName: "super_connection",
+		ConfigUrls:           test.TestURLWithPassword,
+		ConfigSubject:        "foo",
+		ConfigConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -90,13 +85,11 @@ func TestSource_OpenWithPassword(t *testing.T) {
 }
 
 func TestSource_OpenWithToken(t *testing.T) {
-	t.Parallel()
-
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		common.KeyURLs:           test.TestURLWithToken,
-		common.KeySubject:        "foo",
-		common.KeyConnectionName: "super_connection",
+		ConfigUrls:           test.TestURLWithToken,
+		ConfigSubject:        "foo",
+		ConfigConnectionName: "super_connection",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -120,14 +113,12 @@ func TestSource_OpenWithToken(t *testing.T) {
 }
 
 func TestSource_OpenWithNKey(t *testing.T) {
-	t.Parallel()
-
 	source := NewSource()
 	err := source.Configure(context.Background(), map[string]string{
-		common.KeyURLs:           test.TestURLWithNKey,
-		common.KeySubject:        "foo",
-		common.KeyConnectionName: "super_connection",
-		common.KeyNKeyPath:       "../test/fixtures/test_nkey_seed.txt",
+		ConfigUrls:           test.TestURLWithNKey,
+		ConfigSubject:        "foo",
+		ConfigConnectionName: "super_connection",
+		ConfigNkeyPath:       "../test/fixtures/test_nkey_seed.txt",
 	})
 	if err != nil {
 		t.Fatalf("configure source: %v", err)
@@ -151,13 +142,11 @@ func TestSource_OpenWithNKey(t *testing.T) {
 }
 
 func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
-	t.Parallel()
-
 	subject := "foo_one"
 
 	source, err := createTestPubSub(map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: subject,
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -211,13 +200,11 @@ func TestSource_ReadPubSubSuccessOneMessage(t *testing.T) {
 }
 
 func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
-	t.Parallel()
-
 	subject := "foo_many"
 
 	source, err := createTestPubSub(map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: subject,
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -273,13 +260,11 @@ func TestSource_ReadPubSubSuccessManyMessage(t *testing.T) {
 }
 
 func TestSource_ReadPubSubSuccessNoMessagesBackoff(t *testing.T) {
-	t.Parallel()
-
 	subject := "no_messages"
 
 	source, err := createTestPubSub(map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: subject,
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: subject,
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)
@@ -308,14 +293,12 @@ func TestSource_ReadPubSubSuccessNoMessagesBackoff(t *testing.T) {
 }
 
 func TestSource_ReadPubSubManyMessagesSlowConsumerErr(t *testing.T) {
-	t.Parallel()
-
 	subject := "slow_consumers_subj"
 
 	source, err := createTestPubSub(map[string]string{
-		common.KeyURLs:      test.TestURL,
-		common.KeySubject:   subject,
-		ConfigKeyBufferSize: "64",
+		ConfigUrls:       test.TestURL,
+		ConfigSubject:    subject,
+		ConfigBufferSize: "64",
 	})
 	if err != nil {
 		t.Fatalf("create test pubsub: %v", err)

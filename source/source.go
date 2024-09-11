@@ -50,76 +50,26 @@ func NewSource() sdk.Source {
 
 // Parameters returns a map of named config.Parameters that describe how to configure the Source.
 func (s *Source) Parameters() config.Parameters {
-	return map[string]config.Parameter{
-		common.KeyURLs: {
-			Default:     "",
-			Description: "The connection URLs pointed to NATS instances.",
-			Validations: []config.Validation{config.ValidationRequired{}},
-		},
-		common.KeySubject: {
-			Default:     "",
-			Description: "A name of a subject from which the connector should read.",
-			Validations: []config.Validation{config.ValidationRequired{}},
-		},
-		common.KeyConnectionName: {
-			Default:     "conduit-connection-<uuid>",
-			Description: "Optional connection name which will come in handy when it comes to monitoring.",
-		},
-		common.KeyNKeyPath: {
-			Default:     "",
-			Description: "A path pointed to a NKey pair.",
-		},
-		common.KeyCredentialsFilePath: {
-			Default:     "",
-			Description: "A path pointed to a credentials file.",
-		},
-		common.KeyTLSClientCertPath: {
-			Default: "",
-			Description: "A path pointed to a TLS client certificate, must be present " +
-				"if tls.clientPrivateKeyPath field is also present.",
-		},
-		common.KeyTLSClientPrivateKeyPath: {
-			Default: "",
-			Description: "A path pointed to a TLS client private key, must be present " +
-				"if tls.clientCertPath field is also present.",
-		},
-		common.KeyTLSRootCACertPath: {
-			Default:     "",
-			Description: "A path pointed to a TLS root certificate, provide if you want to verify server’s identity.",
-		},
-		common.KeyMaxReconnects: {
-			Default: "5",
-			Description: "Sets the number of reconnect attempts " +
-				"that will be tried before giving up. If negative, " +
-				"then it will never give up trying to reconnect.",
-		},
-		common.KeyReconnectWait: {
-			Default: "5s",
-			Description: "Sets the time to backoff after attempting a reconnect " +
-				"to a server that we were already connected to previously.",
-		},
-		ConfigKeyBufferSize: {
-			Default:     "1024",
-			Description: "A buffer size for consumed messages.",
-		},
-	}
+	return s.config.Parameters()
 }
 
 // Configure parses and initializes the config.
-func (s *Source) Configure(_ context.Context, cfg config.Config) error {
-	var err error
-	s.config, err = Parse(cfg)
+func (s *Source) Configure(ctx context.Context, cfg config.Config) error {
+	err := sdk.Util.ParseConfig(ctx, cfg, &s.config, NewSource().Parameters())
 	if err != nil {
-		return fmt.Errorf("parse config: %w", err)
+		return err
 	}
 
-	s.errC = make(chan error, 1)
+	connName := s.config.GetConnectionName()
+	sdk.Logger(ctx).Info().Str("connectionName", connName).Msg("configured connection name")
 
 	return nil
 }
 
 // Open opens a connection to NATS and initializes iterators.
 func (s *Source) Open(context.Context, opencdc.Position) error {
+	s.errC = make(chan error, 1)
+
 	opts, err := common.GetConnectionOptions(s.config.Config)
 	if err != nil {
 		return fmt.Errorf("get connection options: %w", err)

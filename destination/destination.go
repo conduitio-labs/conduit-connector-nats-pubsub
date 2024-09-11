@@ -41,10 +41,6 @@ type Destination struct {
 	writer Writer
 }
 
-type Config struct {
-	common.Config
-}
-
 // NewDestination creates new instance of the Destination.
 func NewDestination() sdk.Destination {
 	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
@@ -52,65 +48,18 @@ func NewDestination() sdk.Destination {
 
 // Parameters returns a map of named config.Parameters that describe how to configure the Destination.
 func (d *Destination) Parameters() config.Parameters {
-	return map[string]config.Parameter{
-		common.KeyURLs: {
-			Default:     "",
-			Description: "The connection URLs pointed to NATS instances.",
-			Validations: []config.Validation{config.ValidationRequired{}},
-		},
-		common.KeySubject: {
-			Default:     "",
-			Description: "A name of a subject to which the connector should write.",
-			Validations: []config.Validation{config.ValidationRequired{}},
-		},
-		common.KeyConnectionName: {
-			Default:     "conduit-connection-<uuid>",
-			Description: "Optional connection name which will come in handy when it comes to monitoring.",
-		},
-		common.KeyNKeyPath: {
-			Default:     "",
-			Description: "A path pointed to a NKey pair.",
-		},
-		common.KeyCredentialsFilePath: {
-			Default:     "",
-			Description: "A path pointed to a credentials file.",
-		},
-		common.KeyTLSClientCertPath: {
-			Default: "",
-			Description: "A path pointed to a TLS client certificate, must be present " +
-				"if tls.clientPrivateKeyPath field is also present.",
-		},
-		common.KeyTLSClientPrivateKeyPath: {
-			Default: "",
-			Description: "A path pointed to a TLS client private key, must be present " +
-				"if tls.clientCertPath field is also present.",
-		},
-		common.KeyTLSRootCACertPath: {
-			Default:     "",
-			Description: "A path pointed to a TLS root certificate, provide if you want to verify server’s identity.",
-		},
-		common.KeyMaxReconnects: {
-			Default: "5",
-			Description: "Sets the number of reconnect attempts " +
-				"that will be tried before giving up. If negative, " +
-				"then it will never give up trying to reconnect.",
-		},
-		common.KeyReconnectWait: {
-			Default: "5s",
-			Description: "Sets the time to backoff after attempting a reconnect " +
-				"to a server that we were already connected to previously.",
-		},
-	}
+	return d.config.Parameters()
 }
 
 // Configure parses and initializes the config.
-func (d *Destination) Configure(_ context.Context, cfg config.Config) error {
-	commonCfg, err := common.Parse(cfg)
+func (d *Destination) Configure(ctx context.Context, cfg config.Config) error {
+	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, NewDestination().Parameters())
 	if err != nil {
-		return fmt.Errorf("parse config: %w", err)
+		return err
 	}
 
-	d.config.Config = commonCfg
+	connName := d.config.GetConnectionName()
+	sdk.Logger(ctx).Info().Str("connectionName", connName).Msg("configured connection name")
 
 	return nil
 }

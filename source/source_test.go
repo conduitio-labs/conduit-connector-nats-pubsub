@@ -18,48 +18,33 @@ import (
 	"context"
 	"testing"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
+	"github.com/conduitio/conduit-commons/config"
+	"github.com/matryer/is"
 )
 
 func TestSource_Configure(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		ctx context.Context
-		cfg map[string]string
-	}
-
 	tests := []struct {
 		name    string
-		args    args
+		cfg     config.Config
 		wantErr bool
 	}{
 		{
 			name: "success, correct config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{
-					common.KeyURLs:    "nats://127.0.0.1:4222",
-					common.KeySubject: "foo",
-				},
+			cfg: map[string]string{
+				ConfigUrls:    "nats://127.0.0.1:4222",
+				ConfigSubject: "foo",
 			},
 			wantErr: false,
 		},
 		{
-			name: "fail, empty config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{},
-			},
+			name:    "fail, empty config",
+			cfg:     map[string]string{},
 			wantErr: true,
 		},
 		{
 			name: "fail, invalid config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{
-					common.KeyURLs: "nats://127.0.0.1:4222",
-				},
+			cfg: map[string]string{
+				ConfigUrls: "nats://127.0.0.1:4222",
 			},
 			wantErr: true,
 		},
@@ -67,12 +52,15 @@ func TestSource_Configure(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			is := is.New(t)
+			s := NewSource()
+			err := s.Configure(context.Background(), tt.cfg)
 
-			s := &Source{}
-			if err := s.Configure(tt.args.ctx, tt.args.cfg); (err != nil) != tt.wantErr {
-				t.Errorf("Source.Configure() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				is.True(err != nil)
+				return
 			}
+			is.NoErr(err)
 		})
 	}
 }

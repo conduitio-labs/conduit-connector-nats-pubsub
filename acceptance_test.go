@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/destination"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
@@ -52,7 +52,7 @@ func (d driver) GenerateRecord(_ *testing.T, operation opencdc.Operation) opencd
 //nolint:paralleltest // we don't need the paralleltest here
 func TestAcceptance(t *testing.T) {
 	cfg := map[string]string{
-		common.KeyURLs: test.TestURL,
+		destination.ConfigUrls: test.TestURL,
 	}
 
 	sdk.AcceptanceTest(t, driver{
@@ -63,7 +63,7 @@ func TestAcceptance(t *testing.T) {
 				DestinationConfig: cfg,
 				BeforeTest: func(t *testing.T) {
 					subject := t.Name() + uuid.New().String()
-					cfg[common.KeySubject] = subject
+					cfg[destination.ConfigSubject] = subject
 				},
 				Skip: []string{
 					// NATS PubSub doesn't handle position

@@ -41,15 +41,15 @@ func GetConnectionOptions(config Config) ([]nats.Option, error) {
 		opts = append(opts, nats.UserCredentials(config.CredentialsFilePath))
 	}
 
-	if config.TLSClientCertPath != "" && config.TLSClientPrivateKeyPath != "" {
+	if config.TLS.ClientCertPath != "" && config.TLS.ClientPrivateKeyPath != "" {
 		opts = append(opts, nats.ClientCert(
-			config.TLSClientCertPath,
-			config.TLSClientPrivateKeyPath,
+			config.TLS.ClientCertPath,
+			config.TLS.ClientPrivateKeyPath,
 		))
 	}
 
-	if config.TLSRootCACertPath != "" {
-		opts = append(opts, nats.RootCAs(config.TLSRootCACertPath))
+	if config.TLS.RootCACertPath != "" {
+		opts = append(opts, nats.RootCAs(config.TLS.RootCACertPath))
 	}
 
 	opts = append(opts, nats.MaxReconnects(config.MaxReconnects))

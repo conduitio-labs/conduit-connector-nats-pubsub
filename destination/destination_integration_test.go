@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
 	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/matryer/is"
@@ -35,8 +34,8 @@ func TestDestination_OpenSuccess(t *testing.T) {
 	destination := NewDestination()
 
 	err := destination.Configure(context.Background(), map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: "foo_destination",
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: "foo_destination",
 	})
 	is.NoErr(err)
 
@@ -55,8 +54,8 @@ func TestDestination_OpenFail(t *testing.T) {
 	destination := NewDestination()
 
 	err := destination.Configure(context.Background(), map[string]string{
-		common.KeyURLs:    "nats://localhost:6666",
-		common.KeySubject: "foo_destination",
+		ConfigUrls:    "nats://localhost:6666",
+		ConfigSubject: "foo_destination",
 	})
 	is.NoErr(err)
 
@@ -88,8 +87,8 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 	destination := NewDestination()
 
 	err = destination.Configure(context.Background(), map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: subject,
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: subject,
 	})
 	is.NoErr(err)
 
@@ -138,8 +137,8 @@ func TestDestination_WriteManyMessages(t *testing.T) {
 	destination := NewDestination()
 
 	err = destination.Configure(context.Background(), map[string]string{
-		common.KeyURLs:    test.TestURL,
-		common.KeySubject: subject,
+		ConfigUrls:    test.TestURL,
+		ConfigSubject: subject,
 	})
 	is.NoErr(err)
 
