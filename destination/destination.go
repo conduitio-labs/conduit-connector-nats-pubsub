@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/destination/pubsub"
 	"github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
@@ -66,9 +65,9 @@ func (d *Destination) Configure(ctx context.Context, cfg config.Config) error {
 
 // Open makes sure everything is prepared to receive records.
 func (d *Destination) Open(context.Context) error {
-	opts, err := common.GetConnectionOptions(d.config.Config)
+	opts, err := d.config.ConnectionOptions()
 	if err != nil {
-		return fmt.Errorf("get connection options: %s", err)
+		return fmt.Errorf("get connection options: %w", err)
 	}
 
 	conn, err := nats.Connect(strings.Join(d.config.URLs, ","), opts...)

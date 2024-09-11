@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/source/pubsub"
 	"github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
@@ -70,7 +69,7 @@ func (s *Source) Configure(ctx context.Context, cfg config.Config) error {
 func (s *Source) Open(context.Context, opencdc.Position) error {
 	s.errC = make(chan error, 1)
 
-	opts, err := common.GetConnectionOptions(s.config.Config)
+	opts, err := s.config.ConnectionOptions()
 	if err != nil {
 		return fmt.Errorf("get connection options: %w", err)
 	}

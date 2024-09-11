@@ -61,7 +61,7 @@ linters:
     - errcheck
     - errchkjson
     - errname
-    # - errorlint # TODO enable
+    - errorlint
     - exhaustive
     # - forbidigo
     # - forcetypeassert # TODO enable

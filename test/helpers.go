@@ -32,7 +32,7 @@ var (
 func GetTestConnection(url string) (*nats.Conn, error) {
 	conn, err := nats.Connect(url)
 	if err != nil {
-		return nil, fmt.Errorf("connect to NATS server: %s", err)
+		return nil, fmt.Errorf("connect to NATS server: %w", err)
 	}
 
 	return conn, nil

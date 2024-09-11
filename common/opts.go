@@ -20,16 +20,16 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// GetConnectionOptions returns connection options based on the provided config.
-func GetConnectionOptions(config Config) ([]nats.Option, error) {
+// ConnectionOptions returns connection options based on the provided config.
+func (c Config) ConnectionOptions() ([]nats.Option, error) {
 	var opts []nats.Option
 
-	if config.ConnectionName != "" {
-		opts = append(opts, nats.Name(config.ConnectionName))
+	if c.ConnectionName != "" {
+		opts = append(opts, nats.Name(c.ConnectionName))
 	}
 
-	if config.NKeyPath != "" {
-		opt, err := nats.NkeyOptionFromSeed(config.NKeyPath)
+	if c.NKeyPath != "" {
+		opt, err := nats.NkeyOptionFromSeed(c.NKeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("load NKey pair: %w", err)
 		}
@@ -37,23 +37,23 @@ func GetConnectionOptions(config Config) ([]nats.Option, error) {
 		opts = append(opts, opt)
 	}
 
-	if config.CredentialsFilePath != "" {
-		opts = append(opts, nats.UserCredentials(config.CredentialsFilePath))
+	if c.CredentialsFilePath != "" {
+		opts = append(opts, nats.UserCredentials(c.CredentialsFilePath))
 	}
 
-	if config.TLS.ClientCertPath != "" && config.TLS.ClientPrivateKeyPath != "" {
+	if c.TLS.ClientCertPath != "" && c.TLS.ClientPrivateKeyPath != "" {
 		opts = append(opts, nats.ClientCert(
-			config.TLS.ClientCertPath,
-			config.TLS.ClientPrivateKeyPath,
+			c.TLS.ClientCertPath,
+			c.TLS.ClientPrivateKeyPath,
 		))
 	}
 
-	if config.TLS.RootCACertPath != "" {
-		opts = append(opts, nats.RootCAs(config.TLS.RootCACertPath))
+	if c.TLS.RootCACertPath != "" {
+		opts = append(opts, nats.RootCAs(c.TLS.RootCACertPath))
 	}
 
-	opts = append(opts, nats.MaxReconnects(config.MaxReconnects))
-	opts = append(opts, nats.ReconnectWait(config.ReconnectWait))
+	opts = append(opts, nats.MaxReconnects(c.MaxReconnects))
+	opts = append(opts, nats.ReconnectWait(c.ReconnectWait))
 
 	return opts, nil
 }
