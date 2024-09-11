@@ -1,52 +1,50 @@
-version: '3.4'
-
 services:
   nats:
-    image: nats:2.8.4
+    image: nats:2.10.20-alpine3.20
     ports:
       - "4222:4222"
-      - "8222:8222"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8222/healthz"]
-      timeout: 30s
-      interval: 10s
+      test: ["CMD", "wget", "--output-document", "-", "http://localhost:8222/healthz"]
+      interval: 2s
+      timeout: 10s
       retries: 5
+      start_period: 30s
   
   nats_with_password:
-    image: nats:2.8.4
+    image: nats:2.10.20-alpine3.20
     ports:
       - "4223:4222"
-      - "8223:8222"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8223/healthz"]
-      timeout: 30s
-      interval: 10s
+      test: ["CMD", "wget", "--output-document", "-", "http://localhost:8222/healthz"]
+      interval: 2s
+      timeout: 10s
       retries: 5
+      start_period: 30s
     volumes:
-       - ./configs/server_with_password.conf:/nats-server.conf
+       - ./configs/server_with_password.conf:/etc/nats/nats-server.conf
 
   nats_with_token:
-    image: nats:2.8.4
+    image: nats:2.10.20-alpine3.20
     ports:
       - "4224:4222"
-      - "8224:8222"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8224/healthz"]
-      timeout: 30s
-      interval: 10s
+      test: ["CMD", "wget", "--output-document", "-", "http://localhost:8222/healthz"]
+      interval: 2s
+      timeout: 10s
       retries: 5
+      start_period: 30s
     volumes:
-       - ./configs/server_with_token.conf:/nats-server.conf
+       - ./configs/server_with_token.conf:/etc/nats/nats-server.conf
       
   nats_with_nkey:
-    image: nats:2.8.4
+    image: nats:2.10.20-alpine3.20
     ports:
       - "4225:4222"
-      - "8225:8222"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8225/healthz"]
-      timeout: 30s
-      interval: 10s
+      test: ["CMD", "wget", "--output-document", "-", "http://localhost:8222/healthz"]
+      interval: 2s
+      timeout: 10s
       retries: 5
+      start_period: 30s
     volumes:
-       - ./configs/server_with_nkey.conf:/nats-server.conf
+       - ./configs/server_with_nkey.conf:/etc/nats/nats-server.conf

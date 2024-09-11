@@ -6,9 +6,9 @@ build:
 
 .PHONY: test
 test:
-	docker-compose -f test/docker-compose.yml up --quiet-pull -d
-	go test $(GOTEST_FLAGS) ./...; ret=$$?; \
-		docker-compose -f test/docker-compose.yml down; \
+	docker compose -f test/docker-compose.yml up --quiet-pull -d --wait
+	go test $(GOTEST_FLAGS) -race ./...; ret=$$?; \
+		docker compose -f test/docker-compose.yml down; \
 		exit $$ret
 
 .PHONY: generate
