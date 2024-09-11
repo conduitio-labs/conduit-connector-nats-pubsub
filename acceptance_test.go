@@ -62,6 +62,7 @@ func TestAcceptance(t *testing.T) {
 				SourceConfig:      cfg,
 				DestinationConfig: cfg,
 				BeforeTest: func(t *testing.T) {
+					t.Helper()
 					subject := t.Name() + uuid.New().String()
 					cfg[destination.ConfigSubject] = subject
 				},

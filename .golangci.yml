@@ -64,8 +64,8 @@ linters:
     - errorlint
     - exhaustive
     # - forbidigo
-    # - forcetypeassert # TODO enable
-    # - funlen # TODO enable
+    - forcetypeassert
+    - funlen
     - gci
     - ginkgolinter
     - gocheckcompilerdirectives
@@ -74,7 +74,7 @@ linters:
     - goconst
     - gocritic
     - godot
-    # - err113 # TODO enable
+    - err113
     - gofmt
     - gofumpt
     - goheader
@@ -114,12 +114,12 @@ linters:
     - stylecheck
     - tenv
     - testableexamples
-    # - thelper # TODO enable
+    - thelper
     - unconvert
     - unparam
     - unused
     - usestdlibvars
     - wastedassign
     - whitespace
-    # - wrapcheck # TODO enable
+    - wrapcheck
     - zerologlint

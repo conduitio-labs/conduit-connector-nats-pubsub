@@ -54,7 +54,7 @@ func (d *Destination) Parameters() config.Parameters {
 func (d *Destination) Configure(ctx context.Context, cfg config.Config) error {
 	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, NewDestination().Parameters())
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck // we don't need to wrap the error here
 	}
 
 	connName := d.config.GetConnectionName()
@@ -101,7 +101,10 @@ func (d *Destination) Write(_ context.Context, records []opencdc.Record) (int, e
 // Teardown gracefully closes connections.
 func (d *Destination) Teardown(context.Context) error {
 	if d.writer != nil {
-		return d.writer.Close()
+		err := d.writer.Close()
+		if err != nil {
+			return fmt.Errorf("failed to close writer: %w", err)
+		}
 	}
 
 	return nil

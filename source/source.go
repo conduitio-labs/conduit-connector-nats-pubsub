@@ -56,7 +56,7 @@ func (s *Source) Parameters() config.Parameters {
 func (s *Source) Configure(ctx context.Context, cfg config.Config) error {
 	err := sdk.Util.ParseConfig(ctx, cfg, &s.config, NewSource().Parameters())
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck // we don't need to wrap the error here
 	}
 
 	connName := s.config.GetConnectionName()
