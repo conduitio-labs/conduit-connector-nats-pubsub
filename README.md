@@ -4,12 +4,6 @@
 
 The [NATS](https://nats.io/) PubSub connector is one of [Conduit](https://github.com/ConduitIO/conduit) plugins. It provides both, a source and a destination NATS PubSub connector.
 
-### Prerequisites
-
-- [Go](https://go.dev/) 1.21
-- (optional) [golangci-lint](https://github.com/golangci/golangci-lint) 1.55.2
-- [NATS](https://nats.io/download/) 2.8.4
-
 ### How to build it
 
 Run `make`.
