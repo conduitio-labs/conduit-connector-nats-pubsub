@@ -49,7 +49,7 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
-    # - containedctx # TODO enable
+    - containedctx
     - contextcheck
     - copyloopvar
     - decorder

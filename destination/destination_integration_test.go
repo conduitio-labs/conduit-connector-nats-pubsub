@@ -27,8 +27,6 @@ import (
 )
 
 func TestDestination_OpenSuccess(t *testing.T) {
-	t.Parallel()
-
 	is := is.New(t)
 
 	destination := NewDestination()
@@ -47,8 +45,6 @@ func TestDestination_OpenSuccess(t *testing.T) {
 }
 
 func TestDestination_OpenFail(t *testing.T) {
-	t.Parallel()
-
 	is := is.New(t)
 
 	destination := NewDestination()
@@ -67,8 +63,6 @@ func TestDestination_OpenFail(t *testing.T) {
 }
 
 func TestDestination_WriteOneMessage(t *testing.T) {
-	t.Parallel()
-
 	is := is.New(t)
 
 	subject := "foo_destination_write_one_pubsub"
@@ -117,8 +111,6 @@ func TestDestination_WriteOneMessage(t *testing.T) {
 }
 
 func TestDestination_WriteManyMessages(t *testing.T) {
-	t.Parallel()
-
 	is := is.New(t)
 
 	subject := "foo_destination_write_many_pubsub"
