@@ -20,14 +20,12 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/conduitio/conduit-commons/opencdc"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
 
 func TestPubSubIterator_HasNext(t *testing.T) {
-	t.Parallel()
-
 	type fields struct {
 		messages chan *nats.Msg
 	}
@@ -62,11 +60,7 @@ func TestPubSubIterator_HasNext(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			i := &Iterator{
 				messages: tt.fields.messages,
 			}
@@ -85,8 +79,6 @@ func TestPubSubIterator_HasNext(t *testing.T) {
 }
 
 func TestPubSubIterator_Next(t *testing.T) {
-	t.Parallel()
-
 	type fields struct {
 		messages chan *nats.Msg
 	}
@@ -96,7 +88,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 		fields   fields
 		timeout  time.Duration
 		fillFunc func(chan *nats.Msg)
-		want     sdk.Record
+		want     opencdc.Record
 		wantErr  bool
 	}{
 		{
@@ -110,10 +102,10 @@ func TestPubSubIterator_Next(t *testing.T) {
 					Data:    []byte(`"name": "bob"`),
 				}
 			},
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData([]byte(`"name": "bob"`)),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData([]byte(`"name": "bob"`)),
 				},
 			},
 			wantErr: false,
@@ -124,7 +116,7 @@ func TestPubSubIterator_Next(t *testing.T) {
 				messages: make(chan *nats.Msg, 1),
 			},
 			fillFunc: nil,
-			want:     sdk.Record{},
+			want:     opencdc.Record{},
 			wantErr:  false,
 		},
 		{
@@ -134,17 +126,13 @@ func TestPubSubIterator_Next(t *testing.T) {
 			},
 			timeout:  20 * time.Millisecond,
 			fillFunc: nil,
-			want:     sdk.Record{},
+			want:     opencdc.Record{},
 			wantErr:  false,
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			i := &Iterator{
 				messages: tt.fields.messages,
 			}
@@ -192,8 +180,6 @@ func TestPubSubIterator_Next(t *testing.T) {
 }
 
 func TestPubSubIterator_messageToRecord(t *testing.T) {
-	t.Parallel()
-
 	type args struct {
 		msg *nats.Msg
 	}
@@ -202,7 +188,7 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		want    sdk.Record
+		want    opencdc.Record
 	}{
 		{
 			name: "success",
@@ -213,10 +199,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData([]byte("sample")),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData([]byte("sample")),
 				},
 			},
 		},
@@ -228,21 +214,17 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			want: sdk.Record{
-				Operation: sdk.OperationCreate,
-				Payload: sdk.Change{
-					After: sdk.RawData(nil),
+			want: opencdc.Record{
+				Operation: opencdc.OperationCreate,
+				Payload: opencdc.Change{
+					After: opencdc.RawData(nil),
 				},
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			i := &Iterator{}
 
 			got, err := i.messageToRecord(tt.args.msg)
@@ -252,11 +234,8 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				return
 			}
 
-			// copy tt.want in order to avoid race conditions with t.Parallel
-			copyWant := tt.want
-
 			// we don't care about time
-			copyWant.Metadata = got.Metadata
+			tt.want.Metadata = got.Metadata
 
 			// check if the position is a valid UUID
 			_, err = uuid.FromBytes(got.Position)
@@ -266,10 +245,10 @@ func TestPubSubIterator_messageToRecord(t *testing.T) {
 				return
 			}
 
-			copyWant.Position = got.Position
+			tt.want.Position = got.Position
 
-			if !reflect.DeepEqual(got, copyWant) {
-				t.Errorf("PubSubIterator.messageToRecord() = %v, want %v", got, copyWant)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PubSubIterator.messageToRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}

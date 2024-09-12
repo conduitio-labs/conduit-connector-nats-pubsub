@@ -19,16 +19,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/destination/pubsub"
+	"github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/nats-io/nats.go"
 )
 
 // Writer defines a writer interface needed for the Destination.
 type Writer interface {
-	Write(record sdk.Record) error
+	Write(record opencdc.Record) error
 	Close() error
 }
 
@@ -36,7 +36,7 @@ type Writer interface {
 type Destination struct {
 	sdk.UnimplementedDestination
 
-	config config.Config
+	config Config
 	writer Writer
 }
 
@@ -45,84 +45,29 @@ func NewDestination() sdk.Destination {
 	return sdk.DestinationWithMiddleware(&Destination{}, sdk.DefaultDestinationMiddleware()...)
 }
 
-// Parameters returns a map of named sdk.Parameters that describe how to configure the Destination.
-func (d *Destination) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
-		config.KeyURLs: {
-			Default:     "",
-			Required:    true,
-			Description: "The connection URLs pointed to NATS instances.",
-		},
-		config.KeySubject: {
-			Default:     "",
-			Required:    true,
-			Description: "A name of a subject to which the connector should write.",
-		},
-		config.KeyConnectionName: {
-			Default:     "conduit-connection-<uuid>",
-			Required:    false,
-			Description: "Optional connection name which will come in handy when it comes to monitoring.",
-		},
-		config.KeyNKeyPath: {
-			Default:     "",
-			Required:    false,
-			Description: "A path pointed to a NKey pair.",
-		},
-		config.KeyCredentialsFilePath: {
-			Default:     "",
-			Required:    false,
-			Description: "A path pointed to a credentials file.",
-		},
-		config.KeyTLSClientCertPath: {
-			Default:  "",
-			Required: false,
-			Description: "A path pointed to a TLS client certificate, must be present " +
-				"if tls.clientPrivateKeyPath field is also present.",
-		},
-		config.KeyTLSClientPrivateKeyPath: {
-			Default:  "",
-			Required: false,
-			Description: "A path pointed to a TLS client private key, must be present " +
-				"if tls.clientCertPath field is also present.",
-		},
-		config.KeyTLSRootCACertPath: {
-			Default:     "",
-			Required:    false,
-			Description: "A path pointed to a TLS root certificate, provide if you want to verify server’s identity.",
-		},
-		config.KeyMaxReconnects: {
-			Default:  "5",
-			Required: false,
-			Description: "Sets the number of reconnect attempts " +
-				"that will be tried before giving up. If negative, " +
-				"then it will never give up trying to reconnect.",
-		},
-		config.KeyReconnectWait: {
-			Default:  "5s",
-			Required: false,
-			Description: "Sets the time to backoff after attempting a reconnect " +
-				"to a server that we were already connected to previously.",
-		},
-	}
+// Parameters returns a map of named config.Parameters that describe how to configure the Destination.
+func (d *Destination) Parameters() config.Parameters {
+	return d.config.Parameters()
 }
 
 // Configure parses and initializes the config.
-func (d *Destination) Configure(_ context.Context, cfg map[string]string) error {
-	config, err := config.Parse(cfg)
+func (d *Destination) Configure(ctx context.Context, cfg config.Config) error {
+	err := sdk.Util.ParseConfig(ctx, cfg, &d.config, NewDestination().Parameters())
 	if err != nil {
-		return fmt.Errorf("parse config: %w", err)
+		return err //nolint:wrapcheck // we don't need to wrap the error here
 	}
 
-	d.config = config
+	connName := d.config.GetConnectionName()
+	sdk.Logger(ctx).Info().Str("connectionName", connName).Msg("configured connection name")
 
 	return nil
 }
 
 // Open makes sure everything is prepared to receive records.
 func (d *Destination) Open(context.Context) error {
-	opts, err := common.GetConnectionOptions(d.config)
+	opts, err := d.config.ConnectionOptions()
 	if err != nil {
-		return fmt.Errorf("get connection options: %s", err)
+		return fmt.Errorf("get connection options: %w", err)
 	}
 
 	conn, err := nats.Connect(strings.Join(d.config.URLs, ","), opts...)
@@ -142,7 +87,7 @@ func (d *Destination) Open(context.Context) error {
 }
 
 // Write writes a record into a Destination.
-func (d *Destination) Write(_ context.Context, records []sdk.Record) (int, error) {
+func (d *Destination) Write(_ context.Context, records []opencdc.Record) (int, error) {
 	for i, record := range records {
 		err := d.writer.Write(record)
 		if err != nil {
@@ -156,7 +101,10 @@ func (d *Destination) Write(_ context.Context, records []sdk.Record) (int, error
 // Teardown gracefully closes connections.
 func (d *Destination) Teardown(context.Context) error {
 	if d.writer != nil {
-		return d.writer.Close()
+		err := d.writer.Close()
+		if err != nil {
+			return fmt.Errorf("failed to close writer: %w", err)
+		}
 	}
 
 	return nil

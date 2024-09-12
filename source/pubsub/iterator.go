@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -61,13 +62,13 @@ func (i *Iterator) HasNext() bool {
 }
 
 // Next returns the next record from the underlying messages channel.
-func (i *Iterator) Next(ctx context.Context) (sdk.Record, error) {
+func (i *Iterator) Next(ctx context.Context) (opencdc.Record, error) {
 	select {
 	case msg := <-i.messages:
 		return i.messageToRecord(msg)
 
 	case <-ctx.Done():
-		return sdk.Record{}, ctx.Err()
+		return opencdc.Record{}, ctx.Err()
 	}
 }
 
@@ -88,25 +89,25 @@ func (i *Iterator) Stop() (err error) {
 	return nil
 }
 
-// messageToRecord converts a *nats.Msg to a sdk.Record.
-func (i *Iterator) messageToRecord(msg *nats.Msg) (sdk.Record, error) {
+// messageToRecord converts a *nats.Msg to a opencdc.Record.
+func (i *Iterator) messageToRecord(msg *nats.Msg) (opencdc.Record, error) {
 	position, err := i.getPosition()
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("get position: %w", err)
+		return opencdc.Record{}, fmt.Errorf("get position: %w", err)
 	}
 
-	metadata := make(sdk.Metadata)
+	metadata := make(opencdc.Metadata)
 	metadata.SetCreatedAt(time.Now())
 
-	return sdk.Util.Source.NewRecordCreate(position, metadata, nil, sdk.RawData(msg.Data)), nil
+	return sdk.Util.Source.NewRecordCreate(position, metadata, nil, opencdc.RawData(msg.Data)), nil
 }
 
 // getPosition returns the current iterator position.
-func (i *Iterator) getPosition() (sdk.Position, error) {
+func (i *Iterator) getPosition() (opencdc.Position, error) {
 	uuidBytes, err := uuid.New().MarshalBinary()
 	if err != nil {
 		return nil, fmt.Errorf("marshal uuid: %w", err)
 	}
 
-	return sdk.Position(uuidBytes), nil
+	return opencdc.Position(uuidBytes), nil
 }

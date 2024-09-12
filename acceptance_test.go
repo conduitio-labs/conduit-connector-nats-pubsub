@@ -19,8 +19,9 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/destination"
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/test"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/google/uuid"
 )
@@ -29,19 +30,19 @@ type driver struct {
 	sdk.ConfigurableAcceptanceTestDriver
 }
 
-func (d driver) ReadFromDestination(_ *testing.T, records []sdk.Record) []sdk.Record {
+func (d driver) ReadFromDestination(_ *testing.T, records []opencdc.Record) []opencdc.Record {
 	return records
 }
 
-func (d driver) GenerateRecord(_ *testing.T, operation sdk.Operation) sdk.Record {
+func (d driver) GenerateRecord(_ *testing.T, operation opencdc.Operation) opencdc.Record {
 	id := gofakeit.Int32()
 
-	return sdk.Record{
+	return opencdc.Record{
 		Position:  nil,
 		Operation: operation,
 		Metadata:  nil,
-		Payload: sdk.Change{
-			After: sdk.RawData([]byte(
+		Payload: opencdc.Change{
+			After: opencdc.RawData([]byte(
 				fmt.Sprintf(`"id":%d,"name":"%s"`, id, gofakeit.FirstName()),
 			)),
 		},
@@ -51,7 +52,7 @@ func (d driver) GenerateRecord(_ *testing.T, operation sdk.Operation) sdk.Record
 //nolint:paralleltest // we don't need the paralleltest here
 func TestAcceptance(t *testing.T) {
 	cfg := map[string]string{
-		config.KeyURLs: test.TestURL,
+		destination.ConfigUrls: test.TestURL,
 	}
 
 	sdk.AcceptanceTest(t, driver{
@@ -61,8 +62,9 @@ func TestAcceptance(t *testing.T) {
 				SourceConfig:      cfg,
 				DestinationConfig: cfg,
 				BeforeTest: func(t *testing.T) {
+					t.Helper()
 					subject := t.Name() + uuid.New().String()
-					cfg[config.KeySubject] = subject
+					cfg[destination.ConfigSubject] = subject
 				},
 				Skip: []string{
 					// NATS PubSub doesn't handle position

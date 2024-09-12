@@ -1,4 +1,4 @@
-// Copyright © 2022 Meroxa, Inc.
+// Copyright © 2024 Meroxa, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
 
 //go:generate paramgen -output=paramgen.go Config
 
-package source
+package destination
 
 import (
 	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
 )
 
-// Config holds source specific configurable values.
 type Config struct {
 	common.Config
-
-	// A buffer size for consumed messages.
-	BufferSize int `json:"bufferSize" default:"1024" validate:"gt=63"`
 }

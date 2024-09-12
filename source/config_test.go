@@ -15,60 +15,206 @@
 package source
 
 import (
-	"reflect"
+	"context"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio-labs/conduit-connector-nats-pubsub/common"
+	sdk "github.com/conduitio/conduit-connector-sdk"
+	"github.com/google/go-cmp/cmp"
+	"github.com/matryer/is"
 )
 
 func TestParse(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		cfg map[string]string
-	}
-
 	tests := []struct {
 		name    string
-		args    args
+		cfg     map[string]string
 		want    Config
 		wantErr bool
 	}{
 		{
-			name: "success, default values",
-			args: args{
-				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject: "foo",
-				},
+			name: "success, only required fields provided, many connection URLs",
+			cfg: map[string]string{
+				ConfigUrls:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject: "foo",
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
 				},
-				BufferSize: defaultBufferSize,
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, only required fields provided, one connection URL",
+			cfg: map[string]string{
+				ConfigUrls:    "nats://127.0.0.1:1222",
+				ConfigSubject: "foo",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://127.0.0.1:1222"},
+					Subject:       "foo",
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, url with token",
+			cfg: map[string]string{
+				ConfigUrls:    "nats://token:127.0.0.1:1222",
+				ConfigSubject: "foo",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://token:127.0.0.1:1222"},
+					Subject:       "foo",
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, url with user/password",
+			cfg: map[string]string{
+				ConfigUrls:    "nats://admin:admin@127.0.0.1:1222",
+				ConfigSubject: "foo",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://admin:admin@127.0.0.1:1222"},
+					Subject:       "foo",
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "fail, required field (subject) is missing",
+			cfg: map[string]string{
+				ConfigUrls: "nats://localhost:1222",
+			},
+			want:    Config{},
+			wantErr: true,
+		},
+		{
+			name: "success, nkey pair",
+			cfg: map[string]string{
+				ConfigUrls:     "nats://127.0.0.1:1222",
+				ConfigSubject:  "foo",
+				ConfigNkeyPath: "./config.go",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://127.0.0.1:1222"},
+					Subject:       "foo",
+					NKeyPath:      "./config.go",
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, credentials file",
+			cfg: map[string]string{
+				ConfigUrls:                "nats://127.0.0.1:1222",
+				ConfigSubject:             "foo",
+				ConfigCredentialsFilePath: "./config.go",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:                []string{"nats://127.0.0.1:1222"},
+					Subject:             "foo",
+					CredentialsFilePath: "./config.go",
+					MaxReconnects:       5,
+					ReconnectWait:       time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, custom connection name",
+			cfg: map[string]string{
+				ConfigUrls:           "nats://127.0.0.1:1222",
+				ConfigSubject:        "foo",
+				ConfigConnectionName: "my_super_connection",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:           []string{"nats://127.0.0.1:1222"},
+					Subject:        "foo",
+					ConnectionName: "my_super_connection",
+					MaxReconnects:  5,
+					ReconnectWait:  time.Second * 5,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, custom reconnect options",
+			cfg: map[string]string{
+				ConfigUrls:          "nats://127.0.0.1:1222",
+				ConfigSubject:       "foo",
+				ConfigMaxReconnects: "20",
+				ConfigReconnectWait: "10s",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://127.0.0.1:1222"},
+					Subject:       "foo",
+					MaxReconnects: 20,
+					ReconnectWait: time.Second * 10,
+				},
+				BufferSize: 1024,
+			},
+			wantErr: false,
+		},
+		{
+			name: "success, default values",
+			cfg: map[string]string{
+				ConfigUrls:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject: "foo",
+			},
+			want: Config{
+				Config: common.Config{
+					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
+					Subject:       "foo",
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
+				},
+				BufferSize: 1024,
 			},
 			wantErr: false,
 		},
 		{
 			name: "success, set buffer size",
-			args: args{
-				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
-					ConfigKeyBufferSize: "128",
-				},
+			cfg: map[string]string{
+				ConfigUrls:       "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject:    "foo",
+				ConfigBufferSize: "128",
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
 				},
 				BufferSize: 128,
 			},
@@ -76,43 +222,37 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "success, default buffer size",
-			args: args{
-				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject: "foo",
-				},
+			cfg: map[string]string{
+				ConfigUrls:    "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject: "foo",
 			},
 			want: Config{
-				Config: config.Config{
+				Config: common.Config{
 					URLs:          []string{"nats://127.0.0.1:1222", "nats://127.0.0.1:1223", "nats://127.0.0.1:1224"},
 					Subject:       "foo",
-					MaxReconnects: config.DefaultMaxReconnects,
-					ReconnectWait: config.DefaultReconnectWait,
+					MaxReconnects: 5,
+					ReconnectWait: time.Second * 5,
 				},
-				BufferSize: defaultBufferSize,
+				BufferSize: 1024,
 			},
 			wantErr: false,
 		},
 		{
 			name: "fail, invalid buffer size",
-			args: args{
-				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
-					ConfigKeyBufferSize: "8",
-				},
+			cfg: map[string]string{
+				ConfigUrls:       "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject:    "foo",
+				ConfigBufferSize: "8",
 			},
 			want:    Config{},
 			wantErr: true,
 		},
 		{
 			name: "fail, invalid buffer size",
-			args: args{
-				cfg: map[string]string{
-					config.KeyURLs:      "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
-					config.KeySubject:   "foo",
-					ConfigKeyBufferSize: "what",
-				},
+			cfg: map[string]string{
+				ConfigUrls:       "nats://127.0.0.1:1222,nats://127.0.0.1:1223,nats://127.0.0.1:1224",
+				ConfigSubject:    "foo",
+				ConfigBufferSize: "what",
 			},
 			want:    Config{},
 			wantErr: true,
@@ -120,25 +260,26 @@ func TestParse(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			is := is.New(t)
+			var got Config
+			err := sdk.Util.ParseConfig(context.Background(), tt.cfg, &got, NewSource().Parameters())
+			got.GetConnectionName() // initialize connection name
 
-			got, err := Parse(tt.args.cfg)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
-
+			if tt.wantErr {
+				is.True(err != nil)
 				return
 			}
+			is.NoErr(err)
 
-			if strings.HasPrefix(got.ConnectionName, config.DefaultConnectionNamePrefix) {
+			if tt.want.ConnectionName == "" {
+				if !strings.HasPrefix(got.ConnectionName, common.DefaultConnectionNamePrefix) {
+					is.Equal(common.DefaultConnectionNamePrefix, got.ConnectionName) // expected default connection name prefix
+				}
 				tt.want.ConnectionName = got.ConnectionName
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Parse() = %v, want %v", got, tt.want)
-			}
+			is.Equal("", cmp.Diff(tt.want, got))
 		})
 	}
 }

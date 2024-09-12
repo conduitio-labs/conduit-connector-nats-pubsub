@@ -18,61 +18,41 @@ import (
 	"context"
 	"testing"
 
-	"github.com/conduitio-labs/conduit-connector-nats-pubsub/config"
+	"github.com/conduitio/conduit-commons/config"
 )
 
 func TestDestination_Configure(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		ctx context.Context
-		cfg map[string]string
-	}
-
 	tests := []struct {
 		name    string
-		args    args
+		cfg     config.Config
 		wantErr bool
 	}{
 		{
 			name: "success, correct config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{
-					config.KeyURLs:    "nats://127.0.0.1:4222",
-					config.KeySubject: "foo",
-				},
+			cfg: config.Config{
+				ConfigUrls:    "nats://127.0.0.1:4222",
+				ConfigSubject: "foo",
 			},
 			wantErr: false,
 		},
 		{
-			name: "fail, empty config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{},
-			},
+			name:    "fail, empty config",
+			cfg:     config.Config{},
 			wantErr: true,
 		},
 		{
 			name: "fail, invalid config",
-			args: args{
-				ctx: context.Background(),
-				cfg: map[string]string{
-					config.KeyURLs: "nats://127.0.0.1:4222",
-				},
+			cfg: config.Config{
+				ConfigUrls: "nats://127.0.0.1:4222",
 			},
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			s := &Destination{}
-			if err := s.Configure(tt.args.ctx, tt.args.cfg); (err != nil) != tt.wantErr {
+			if err := s.Configure(context.Background(), tt.cfg); (err != nil) != tt.wantErr {
 				t.Errorf("Source.Configure() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
