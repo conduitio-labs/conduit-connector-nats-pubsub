@@ -37,7 +37,7 @@ type Config struct {
 	// If negative, it will never give up trying to reconnect.
 	MaxReconnects int `json:"maxReconnects" default:"5"`
 	// Sets the time to backoff after attempting a reconnect to a server that we
-	// were already connected to previously.
+	// were already connected to previously, formatted as a time.Duration string.
 	ReconnectWait time.Duration `json:"reconnectWait" default:"5s"`
 
 	TLS TLSConfig `json:"tls"`
