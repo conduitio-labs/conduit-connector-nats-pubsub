@@ -23,7 +23,7 @@ import (
 // Config contains configurable values
 // shared between source and destination NATS PubSub connector.
 type Config struct {
-	// The connection URLs pointed to NATS instances.
+	// A comma-separated list of connection URLs pointing to NATS instances.
 	URLs []string `json:"urls" validate:"required"`
 	// The name of a subject which the connector should use to read/write records.
 	Subject string `json:"subject" validate:"required"`
