@@ -48,7 +48,7 @@ func (Config) Parameters() map[string]config.Parameter {
 		},
 		ConfigReconnectWait: {
 			Default:     "5s",
-			Description: "Sets the time to backoff after attempting a reconnect to a server that we\nwere already connected to previously.",
+			Description: "Sets the time to backoff after attempting a reconnect to a server that we\nwere already connected to previously, formatted as a time.Duration string.",
 			Type:        config.ParameterTypeDuration,
 			Validations: []config.Validation{},
 		},
@@ -80,7 +80,7 @@ func (Config) Parameters() map[string]config.Parameter {
 		},
 		ConfigUrls: {
 			Default:     "",
-			Description: "The connection URLs pointed to NATS instances.",
+			Description: "A comma-separated list of connection URLs pointing to NATS instances.",
 			Type:        config.ParameterTypeString,
 			Validations: []config.Validation{
 				config.ValidationRequired{},
